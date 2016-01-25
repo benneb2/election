@@ -1,0 +1,16 @@
+<div class="jumbotron text-center">
+
+	<md-list ng-cloak>
+  <md-subheader class="md-no-sticky">Polls</md-subheader>
+  <md-list-item class="md-4-line" ng-repeat="question in questions" ng-click="delQuestion(question._id)">
+  <div class="md-list-item-text">
+     <h3>{{ question.questionPoll }}</h3>
+      <p>{{question.questionNumber}}</p>
+      <p>{{question.questionQuestion}}</p>
+      <p>{{question.questionType}}</p>
+      </div>
+  </md-list-item>
+</md-list>
+
+
+    </div>

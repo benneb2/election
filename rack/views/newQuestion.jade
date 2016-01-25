@@ -1,0 +1,10 @@
+extends layout
+
+block content
+    h1= title
+    h2= poll
+    form#formAddPoll(name="addQuestion",method="post",action="addQuestion")
+        input#inputNumber(type="text", placeholder="Number", name="qNum")
+        input#inputQuestion(type="text", placeholder="Question", name="qQuestion")
+        input#inputPoll(type="text", placeholder="Question", name="qPoll" value=poll)
+        button#btnSubmit(type="submit") submit

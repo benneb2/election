@@ -1,0 +1,9 @@
+extends layout
+
+block content
+    h1= title
+    h2= question
+    form#formAddResult(name="addResult",method="post",action="addResult")
+        input#inputQuestion(type="text", placeholder="Question", name="rQuestion" value=question)
+        input#inputResult(type="text", placeholder="Result", name="rResult" )
+        button#btnSubmit(type="submit") submit

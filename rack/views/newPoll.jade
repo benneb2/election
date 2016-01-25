@@ -1,0 +1,8 @@
+extends layout
+
+block content
+    h1= title
+    form#formAddPoll(name="addPoll",method="post",action="addPoll")
+        input#inputPollName(type="text", placeholder="Poll Name", name="pollName")
+        input#inputPollDescription(type="text", placeholder="Poll Description", name="pollDesc")
+        button#btnSubmit(type="submit") submit

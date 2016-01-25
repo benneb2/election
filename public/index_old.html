@@ -1,0 +1,227 @@
+<!doctype html>
+
+<!-- ASSIGN OUR ANGULAR MODULE -->
+<html ng-app="scotchTodo">
+<head>
+	<!-- META -->
+	<meta charset="utf-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1"><!-- Optimize mobile viewport -->
+
+	<title>Node/Angular Todo App</title>
+
+	<!-- SCROLLS -->
+	<link rel="stylesheet" href="//netdna.bootstrapcdn.com/bootstrap/3.0.0/css/bootstrap.min.css"><!-- load bootstrap -->
+	<link rel="stylesheet" href="//netdna.bootstrapcdn.com/font-awesome/4.0.3/css/font-awesome.min.css">
+	<link rel="stylesheet" href="https://ajax.googleapis.com/ajax/libs/angular_material/1.0.0-rc1/angular-material.min.css">
+	<style>
+		html 					{ overflow-y:scroll; }
+		body 					{ padding-top:50px; }
+		#todo-list 				{ margin-bottom:30px; }
+		#todo-form 	 			{ margin-bottom:50px; }
+	</style>
+
+	<!-- SPELLS -->
+	<!-- 
+	<script src="//ajax.googleapis.com/ajax/libs/angularjs/1.2.16/angular.min.js"></script>load angular -->
+
+ <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.4.7/angular.min.js"></script>
+  <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.4.7/angular-animate.min.js"></script>
+  <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.4.7/angular-aria.min.js"></script>
+	<script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.4.7/angular-route.js"></script>
+  <script src="https://ajax.googleapis.com/ajax/libs/angular_material/1.0.0-rc1/angular-material.min.js"></script>
+
+	<script src="js/controllers/main.js"></script> <!-- load up our controller -->
+	<script src="js/services/todos.js"></script> <!-- load our todo service -->
+	<script src="js/services/elecService.js"></script> <!-- load our todo service -->
+	<script src="js/core.js"></script> <!-- load our main application -->
+
+
+</head>
+<!-- SET THE CONTROLLER -->
+<body ng-controller="mainController">
+	<div class="container">
+
+		<!-- HEADER AND TODO COUNT -->
+		<div class="jumbotron text-center">
+			<h1>2016 Election Poll <span class="label label-info">{{ polls.length }}</span></h1>
+		</div>
+
+		<!-- TODO LIST -->
+		<div id="todo-list" class="row">
+			<div class="col-sm-4 col-sm-offset-4">
+
+				
+
+				<!-- LOOP OVER THE TODOS IN $scope.todos -->
+<md-list ng-cloak>
+  <md-subheader class="md-no-sticky">Polls</md-subheader>
+  <md-list-item class="md-2-line" ng-repeat="poll in polls" ng-click="pollClick(poll._id)">
+  <div class="md-list-item-text">
+     <h3>{{ poll.pollName }}</h3>
+      <p>{{poll.pollDesc}}</p>
+      </div>
+  </md-list-item>
+</md-list>
+
+				<p class="text-center" ng-show="loading">
+					<span class="fa fa-spinner fa-spin fa-3x"></span>
+				</p>
+
+			</div>
+		</div>
+
+		<!-- FORM TO CREATE TODOS -->
+		<div id="poll-form" class="row">
+			<div class="col-sm-8 col-sm-offset-2 text-center">
+				<form>
+					<div class="form-group">
+
+						<!-- BIND THIS VALUE TO formData.text IN ANGULAR -->
+						<input type="text" class="form-control input-lg text-center" placeholder="Poll Name" ng-model="formData.pollName">
+						<input type="text" class="form-control input-lg text-center" placeholder="Poll Desc" ng-model="formData.pollDesc">
+					</div>
+
+					<!-- createToDo() WILL CREATE NEW TODOS -->
+					<button type="submit" class="btn btn-primary btn-lg" ng-click="createPoll()">Add</button>
+
+
+<md-list ng-cloak>
+  <md-subheader class="md-no-sticky">Polls</md-subheader>
+  <md-list-item class="md-4-line" ng-repeat="question in questions" ng-click="delQuestion(question._id)">
+  <div class="md-list-item-text">
+     <h3>{{ question.questionPoll }}</h3>
+      <p>{{question.questionNumber}}</p>
+      <p>{{question.questionQuestion}}</p>
+      <p>{{question.questionType}}</p>
+      </div>
+  </md-list-item>
+</md-list>
+
+
+					<div class="form-group">
+
+						<!-- BIND THIS VALUE TO formData.text IN ANGULAR -->
+						<input type="text" class="form-control input-lg text-center" placeholder="questionPoll" ng-model="formData.questionPoll">
+						<input type="text" class="form-control input-lg text-center" placeholder="questionNumber" ng-model="formData.questionNumber">
+						<input type="text" class="form-control input-lg text-center" placeholder="questionQuestion" ng-model="formData.questionQuestion">
+						<input type="text" class="form-control input-lg text-center" placeholder="questionType" ng-model="formData.questionType">
+					</div>
+
+					<!-- createToDo() WILL CREATE NEW TODOS -->
+					<button type="submit" class="btn btn-primary btn-lg" ng-click="createQuestion()">Add Question</button>
+
+					<div class="form-group">
+
+						<!-- BIND THIS VALUE TO formData.text IN ANGULAR -->
+						<input type="text" class="form-control input-lg text-center" placeholder="questionPoll" ng-model="formData.questionPollGet">
+					</div>
+					<button type="submit" class="btn btn-primary btn-lg" ng-click="getQuestion()">Get Question</button>
+
+				</form>
+			</div>
+		</div>
+
+
+		<md-list ng-cloak>
+  <md-subheader class="md-no-sticky">Polls</md-subheader>
+  <md-list-item class="md-4-line" ng-repeat="result in results" ng-click="delResult(result._id)">
+  <div class="md-list-item-text">
+     <h3>{{ result.resultPoll }}</h3>
+      <p>{{result.resultQuestion}}</p>
+      <p>{{result.resultAnswer}}</p>
+      <p>{{result.resultUser}}</p>
+      </div>
+  </md-list-item>
+</md-list>
+
+				<div class="form-group">
+
+						<!-- BIND THIS VALUE TO formData.text IN ANGULAR -->
+						<input type="text" class="form-control input-lg text-center" placeholder="resultPoll" ng-model="formData.resultPoll">
+						<input type="text" class="form-control input-lg text-center" placeholder="resultQuestion" ng-model="formData.resultQuestion">
+						<input type="text" class="form-control input-lg text-center" placeholder="resultAnswer" ng-model="formData.resultAnswer">
+						<input type="text" class="form-control input-lg text-center" placeholder="resultUser" ng-model="formData.resultUser">
+					</div>
+
+					<!-- createToDo() WILL CREATE NEW TODOS -->
+					<button type="submit" class="btn btn-primary btn-lg" ng-click="createResult()">Add Result</button>
+
+					<div class="form-group">
+
+						<!-- BIND THIS VALUE TO formData.text IN ANGULAR -->
+						<input type="text" class="form-control input-lg text-center" placeholder="resultQuestionGet" ng-model="formData.resultQuestionGet">
+					</div>
+					<button type="submit" class="btn btn-primary btn-lg" ng-click="getQuestionResults()">Get Question Result</button>
+
+					<div class="form-group">
+
+						<!-- BIND THIS VALUE TO formData.text IN ANGULAR -->
+						<input type="text" class="form-control input-lg text-center" placeholder="resultPollGet" ng-model="formData.resultPollGet">
+						<input type="text" class="form-control input-lg text-center" placeholder="resultUserGet" ng-model="formData.resultUserGet">
+					</div>
+					<button type="submit" class="btn btn-primary btn-lg" ng-click="getUserResults()">Get User Poll Result</button>
+
+
+		<md-list ng-cloak>
+  <md-subheader class="md-no-sticky">Polls</md-subheader>
+  <md-list-item class="md-4-line" ng-repeat="user in users" ng-click="delUser(user._id)">
+  <div class="md-list-item-text">
+     <h3>{{ user.userName }}</h3>
+      <p>{{user.userSurname}}</p>
+      <p>{{user.userPollingStation}}</p>
+      <p>{{user.userType}}</p>
+      </div>
+  </md-list-item>
+</md-list>
+
+				<div class="form-group">
+
+						<!-- BIND THIS VALUE TO formData.text IN ANGULAR -->
+						<input type="text" class="form-control input-lg text-center" placeholder="userName" ng-model="formData.userName">
+						<input type="text" class="form-control input-lg text-center" placeholder="userSurname" ng-model="formData.userSurname">
+						<input type="text" class="form-control input-lg text-center" placeholder="userPollingStation" ng-model="formData.userPollingStation">
+						<input type="text" class="form-control input-lg text-center" placeholder="userType" ng-model="formData.userType">
+					</div>
+
+					<!-- createToDo() WILL CREATE NEW TODOS -->
+					<button type="submit" class="btn btn-primary btn-lg" ng-click="createUser()">Add User</button>
+
+					<div class="form-group">
+						<!-- BIND THIS VALUE TO formData.text IN ANGULAR -->
+						<input type="text" class="form-control input-lg text-center" placeholder="userName" ng-model="formData.userName">
+					</div>
+					<button type="submit" class="btn btn-primary btn-lg" ng-click="getUser()">Get Question Result</button>
+
+
+<md-list ng-cloak>
+  <md-subheader class="md-no-sticky">Polls</md-subheader>
+  <md-list-item class="md-3-line" ng-repeat="station in stations" ng-click="delStation(station._id)">
+  <div class="md-list-item-text">
+     <h3>{{ station.stationName }}</h3>
+      <p>{{station.stationProvince}}</p>
+      <p>{{station.stationMunicipality}}</p>
+      </div>
+  </md-list-item>
+</md-list>
+
+<div class="form-group">
+
+						<!-- BIND THIS VALUE TO formData.text IN ANGULAR -->
+						<input type="text" class="form-control input-lg text-center" placeholder="stationName" ng-model="formData.stationName">
+						<input type="text" class="form-control input-lg text-center" placeholder="stationProvince" ng-model="formData.stationProvince">
+						<input type="text" class="form-control input-lg text-center" placeholder="stationMunicipality" ng-model="formData.stationMunicipality">
+					</div>
+
+					<!-- createToDo() WILL CREATE NEW TODOS -->
+					<button type="submit" class="btn btn-primary btn-lg" ng-click="createStation()">Add Station</button>
+
+
+		<div class="text-center text-muted" style="padding-top:20pt">
+			<p>Election Poll.</p>
+			<p>BJ ANALytics&copy;</p>
+		</div>
+
+	</div>
+
+</body>
+</html>
