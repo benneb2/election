@@ -85,13 +85,17 @@ function getStations(res){
 };
 
 function getUser(res,userName,password){
-	userDB.find({userName:userName,password:password},function(err, results) {
+
+	userDB.find({userUserName:userName,userPassword:password},function(err, results) {
 
 			// if there is an error retrieving, send the error. nothing after res.send(err) will execute
 			if (err)
 				res.send(err)
 
-			res.json(results); // return all results in JSON format
+			if(results.length > 0)
+				res.json(results[0]); // return all results in JSON format
+			else
+				res.send('fail');
 		});
 };
 
@@ -272,7 +276,7 @@ module.exports = function(app) {
 
 	app.get('/api/users/:userName/:password', function(req, res) {
 		// use mongoose to get all poll in the database
-		console.log("GET USER " + req.params.userName);
+		console.log("GET USER " + req.params.userName + " " + req.params.password);
 		getUser(res,req.params.userName,req.params.password);
 	});
 
@@ -280,26 +284,98 @@ module.exports = function(app) {
 		// create a poll, information comes from AJAX request from Angular
 		console.log("POST USERS " + JSON.stringify(req.body));
 
-		var userData = {
-			userName : req.body.userName,
-			userSurname : req.body.userSurname,
-			userPollingStation : req.body.userPollingStation,
-			userType : req.body.userType,
-			isDeleted : false,
-			
-		};
 
-		// console.log(JSON.stringify(polldata));
+		userDB.find({userUserName:req.body.userUserName},function(err, results) {
 
-		userDB.create(userData, function(err, userData) {
-			if (err)
-			{
-				console.log("err " + err);
+			console.log(results);
+			if(err)
 				res.send(err);
+
+			if(results && results.length > 0)
+			{
+				console.log("user Exist")
+				res.send("user exist");
+				return;
 			}
-			// console.log("poll.create " + JSON.stringify(pollData));
-			// get and return all the polls after you create another
-			getUsers(res);
+
+			if(typeof req.body.userRole == 'undefined')
+				req.body.userRole = 'user';
+
+			var userData = {
+				userName : req.body.userName,
+				userUserName : req.body.userUserName,
+				userSurname : req.body.userSurname,
+				userPassword : req.body.userPassword,
+				userEmail : req.body.userEmail,
+				userPollingStation : req.body.userPollingStation,
+				userType : req.body.userType,
+				userRole : req.body.userRole,
+				isDeleted : false,
+			};
+
+			// console.log(JSON.stringify(polldata));
+
+			userDB.create(userData, function(err, userData) {
+				if (err)
+				{
+					console.log("err " + err);
+					res.send(err);
+				}else
+				{	
+					res.send("success");
+				}
+				// console.log("poll.create " + JSON.stringify(pollData));
+				// get and return all the polls after you create another
+				// console.log(userData);
+
+				// getUsers(res);
+			});
+		});
+
+	});
+
+	app.post('/api/user', function(req, res) {
+		// create a poll, information comes from AJAX request from Angular
+		console.log("POST USER " + JSON.stringify(req.body));
+
+
+		userDB.find({userUserName:req.body.userUserName},function(err, results) {
+
+			console.log(results);
+			if(err)
+				res.send(err);
+
+			if(typeof req.body.userRole == 'undefined')
+				req.body.userRole = 'user';
+
+			var result = results[0];
+
+			result.userName = req.body.userName;
+			result.userSurname = req.body.userSurname;
+			result.userPassword = req.body.userPassword;
+			result.userEmail = req.body.userEmail;
+			result.userPollingStation = req.body.userPollingStation;
+			result.userType = req.body.userType;
+			result.userRole = req.body.userRole;
+			result.isDeleted = false;
+
+			// console.log(JSON.stringify(polldata));
+
+			userDB.update(result, function(err, userData) {
+				if (err)
+				{
+					console.log("err " + err);
+					res.send(err);
+				}else
+				{	
+					res.send("success");
+				}
+				// console.log("poll.create " + JSON.stringify(pollData));
+				// get and return all the polls after you create another
+				// console.log(userData);
+
+				// getUsers(res);
+			});
 		});
 
 	});
@@ -340,14 +416,18 @@ module.exports = function(app) {
 		// console.log(JSON.stringify(polldata));
 
 		stationDB.create(stationData, function(err, stationData) {
+			
 			if (err)
 			{
 				console.log("err " + err);
 				res.send(err);
+			}else
+			{	
+				res.send("success");
 			}
 			// console.log("poll.create " + JSON.stringify(pollData));
 			// get and return all the polls after you create another
-			getStations(res);
+			// getStations(res);
 		});
 
 	});

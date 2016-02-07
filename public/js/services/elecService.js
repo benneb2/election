@@ -53,6 +53,9 @@ angular.module('elecService', [])
 			deleteUser : function(id) {
 				return $http.delete('/api/users/' + id);
 			},
+			updateUser: function(formData) {
+				return $http.post('/api/user', formData);
+			},
 
 			//STATIONS
 			getStations : function() {

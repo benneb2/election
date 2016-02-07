@@ -231,9 +231,9 @@ app.config(function($routeProvider) {
 			}
 		}
 
-		$scope.pollClick = function(id)
+		$scope.pollClick = function(_id)
 		{
-			alert(typeof id);
+			alert(_id);
 		};
 
 		// DELETE ==================================================================
