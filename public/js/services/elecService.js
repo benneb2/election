@@ -54,7 +54,7 @@ angular.module('elecService', [])
 				return $http.delete('/api/users/' + id);
 			},
 			updateUser: function(formData) {
-				return $http.post('/api/user', formData);
+				return $http.put('/api/user', formData);
 			},
 
 			//STATIONS

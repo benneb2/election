@@ -120,25 +120,45 @@ module.exports = function(app) {
 		// create a poll, information comes from AJAX request from Angular
 		console.log("POST POLLS " + JSON.stringify(req.body));
 
-		var polldata = {
-			pollName : req.body.pollName,
-			pollDesc : req.body.pollDesc,
-			isDeleted : false,
-			done : false
-		};
-
+		
 		// console.log(JSON.stringify(polldata));
 
-		pollDB.create(polldata, function(err, pollData) {
-			if (err)
-			{
-				console.log("err " + err);
+		
+
+
+		pollDB.find({pollName:req.body.pollName},function(err, results) {
+
+			console.log(results);
+			if(err)
 				res.send(err);
+
+			if(results && results.length > 0)
+			{
+				console.log("poll Exist")
+				res.send("poll exist");
+				return;
 			}
-				
-			// console.log("poll.create " + JSON.stringify(pollData));
-			// get and return all the polls after you create another
-			getPolls(res);
+
+			var polldata = {
+				pollName : req.body.pollName,
+				pollDesc : req.body.pollDesc,
+				isDeleted : false,
+				done : false
+			};
+
+
+			// console.log(JSON.stringify(polldata));
+			pollDB.create(polldata, function(err, pollData) {
+				if (err)
+				{
+					console.log("err " + err);
+					res.send(err);
+				}else
+				{	
+					res.send("success");
+				}
+			});
+
 		});
 
 	});
@@ -171,25 +191,39 @@ module.exports = function(app) {
 		// create a poll, information comes from AJAX request from Angular
 		console.log("POST POLLS " + JSON.stringify(req.body));
 
-		var questionData = {
-			questionPoll : req.body.questionPoll,
-			questionNumber : req.body.questionNumber,
-			questionQuestion : req.body.questionQuestion,
-			questionType : req.body.questionType,
-			isDeleted : false,
-		};
-		// console.log(JSON.stringify(polldata));
+		questionDB.find({questionNumber:req.body.questionNumber,questionPoll:req.body.questionPoll},function(err, results) {
 
-		questionDB.create(questionData, function(err, questionData) {
-			if (err)
-			{
-				console.log("err " + err);
+			console.log(results);
+			if(err)
 				res.send(err);
+
+			if(results && results.length > 0)
+			{
+				console.log("question Exist")
+				res.send("question exist");
+				return;
 			}
-				
-			// console.log("poll.create " + JSON.stringify(pollData));
-			// get and return all the polls after you create another
-			getQuestion(res,req.body.questionPoll);
+
+			var questionData = {
+				questionPoll : req.body.questionPoll,
+				questionNumber : req.body.questionNumber,
+				questionQuestion : req.body.questionQuestion,
+				questionType : req.body.questionType,
+				isDeleted : false,
+			};
+
+
+			// console.log(JSON.stringify(polldata));
+			questionDB.create(questionData, function(err, questionData) {
+				if (err)
+				{
+					console.log("err " + err);
+					res.send(err);
+				}else
+				{	
+					res.send("success");
+				}
+			});
 		});
 
 	});
@@ -310,6 +344,7 @@ module.exports = function(app) {
 				userPollingStation : req.body.userPollingStation,
 				userType : req.body.userType,
 				userRole : req.body.userRole,
+				userManager : req.body.userManager,
 				isDeleted : false,
 			};
 
@@ -334,14 +369,15 @@ module.exports = function(app) {
 
 	});
 
-	app.post('/api/user', function(req, res) {
+	app.put('/api/user', function(req, res) {
 		// create a poll, information comes from AJAX request from Angular
-		console.log("POST USER " + JSON.stringify(req.body));
+		console.log("PUT USER " + JSON.stringify(req.body));
 
 
 		userDB.find({userUserName:req.body.userUserName},function(err, results) {
 
 			console.log(results);
+
 			if(err)
 				res.send(err);
 
@@ -357,11 +393,14 @@ module.exports = function(app) {
 			result.userPollingStation = req.body.userPollingStation;
 			result.userType = req.body.userType;
 			result.userRole = req.body.userRole;
+			result.userManager = req.body.userManager,
 			result.isDeleted = false;
 
-			// console.log(JSON.stringify(polldata));
+			if ( result._id && ( typeof(result._id) === 'string' ) ) {
+  				result._id = mongodb.ObjectID.createFromHexString(result._id)
+			}
 
-			userDB.update(result, function(err, userData) {
+			userDB.update({"_id": result._id},result, function(err, userData) {
 				if (err)
 				{
 					console.log("err " + err);

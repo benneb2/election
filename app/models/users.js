@@ -9,5 +9,6 @@ module.exports = mongoose.model('users', {
 	userType : {type : String, default: ''},
 	userEmail : {type : String, default: ''},
 	userRole : {type : String, default: 'user'},
+	userManager : {type : String, default: ''},
 	isDeleted : {type : Boolean, default: false}
 });

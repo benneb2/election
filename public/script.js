@@ -24,6 +24,11 @@
                 controller  : 'adminController'
             })
 
+            .when('/manager', {
+                templateUrl : 'pages/manager.html',
+                controller  : 'managerController'
+            })
+
             .when('/questions', {
                 templateUrl : 'pages/questions.html',
                 controller  : 'questionsController'
@@ -53,15 +58,48 @@
     scotchApp.controller('adminController', ['$rootScope', '$scope', 'myservice','elec','$location','$mdDialog',function($rootScope, $scope, myservice,elec,$location,$mdDialog) {
         // create a message to display in our view
         $scope.page = "";
+        $scope.roles = ['user','manager','admin'];
+        $scope.types = ['multichoice','number'];
+        //Get Date Beforehand
+        $scope.refreshUsers = function()
+        {
+            elec.getUsers().success(function(data) {
+                $scope.users = data;
+                $scope.managers = [];
+                debugger;
+                for(var i in $scope.users)
+                {
+                    if($scope.users[i].userRole == 'manager')
+                        $scope.managers.push($scope.users[i]);
+                }
+            });
+        }
+
+        $scope.refreshStations = function()
+        {
+            elec.getStations().success(function(data) {
+                    $scope.stations = data;
+            })
+        }
+
+        $scope.refreshPolls = function()
+        {
+            elec.getPoll().success(function(data) {
+                $scope.loading = false;
+                $scope.polls = data;
+            });
+        }
+
+        $scope.refreshUsers();
+        $scope.refreshStations();
+        $scope.refreshPolls();
+
+        $scope.page = 'users';//Default Page
 
         $scope.showPollingStations = function()
         {
-
-            elec.getStations().success(function(data) {
-                $scope.stations = data;
-            })
-
             $scope.page = 'stations';   
+            $scope.refreshStations();
         }
 
         $scope.openStation = function(index)
@@ -116,16 +154,12 @@
 
         $scope.showUsers = function()
         {
-            elec.getUsers().success(function(data) {
-                $scope.users = data;
-            })
-
-            $scope.page = 'users';   
+            $scope.page = 'users'; 
         }
 
         $scope.openUser = function(index)
         {
-            
+            $scope.newUser = false;  
             elec.getStations().success(function(data) {
                 $scope.stations = data;
                 $scope.page = 'user';  
@@ -136,6 +170,9 @@
 
         $scope.updateUser = function()
         {
+            if($scope.user.userRole != 'user')
+                $scope.user.userManager = '';
+
             elec.updateUser($scope.user).success(function(data) {
                 if(data == 'success')
                 {
@@ -156,7 +193,7 @@
                             .parent(angular.element(document.querySelector('#popupContainer')))
                             .clickOutsideToClose(true)
                             .title('User Update failed.')
-                            .content(data)
+                            .content(data.err)
                             .ariaLabel('')
                             .ok('Ok')
                         );
@@ -164,9 +201,158 @@
             });
         }
 
+        $scope.addUser = function()
+        {
+            $scope.page = 'user';  
+            $scope.newUser = true;
+            $scope.user = {};         
+        }
+
+
+        $scope.signup = function()
+        {
+            elec.createUser($scope.user).success(function(data) {
+                if(data == 'user exist')
+                {
+                    $mdDialog.show(
+                        $mdDialog.alert()
+                            .parent(angular.element(document.querySelector('#popupContainer')))
+                            .clickOutsideToClose(true)
+                            .title('Sign up failed.')
+                            .content('User alredy exist.')
+                            .ariaLabel('')
+                            .ok('Ok')
+                        );
+                }else if(data == 'success')
+                {
+                    $scope.page = 'users';
+                    $scope.refreshUsers();
+                }else
+                {
+                    alert(JSON.stringify(data));
+                }
+            });
+        }
+
+        $scope.showPolls = function()
+        {
+            $scope.page = 'polls';
+            $scope.refreshPolls();
+        }
+
+        $scope.openPoll = function(index)
+        {
+            $scope.page = 'poll'; 
+            $scope.isNew = false; 
+            $scope.poll = $scope.polls[index];
+            $scope.poll._id = $scope.poll._id + '';
+        }
+
+        $scope.newPoll = function()
+        {
+            elec.createPoll($scope.poll).success(function(data) {
+
+                if(data == 'poll exist')
+                {
+                    $mdDialog.show(
+                        $mdDialog.alert()
+                            .parent(angular.element(document.querySelector('#popupContainer')))
+                            .clickOutsideToClose(true)
+                            .title('Poll create failed.')
+                            .content('Poll alredy exist.')
+                            .ariaLabel('')
+                            .ok('Ok')
+                        );
+                }else if(data == 'success')
+                {
+                    $scope.showPolls();
+                }else
+                {
+                    alert(JSON.stringify(data));
+                }
+            });
+
+
+        }
+
+        $scope.addPoll = function()
+        {
+            $scope.page = 'poll';  
+            $scope.isNew = true;
+            $scope.poll = {};  
+
+        }
+
+        $scope.delPoll = function()
+        {
+           elec.deletePoll($scope.poll._id).success(function(data) {
+                $scope.showPolls();
+            });       
+        }
+
+        $scope.openQuestions = function()
+        {   
+            $scope.questions = [];
+            $scope.page = 'questions';
+            elec.getQuestion($scope.poll._id).success(function(data) {
+                $scope.questions = data;
+            }); 
+        }
+
+        $scope.addQuestion = function()
+        {
+            $scope.page = 'question';
+            $scope.isNew = true;
+            $scope.question = {};
+        }
+
+        $scope.newQuestion = function()
+        {
+
+            $scope.question.questionPoll = $scope.poll._id ;
+            elec.createQuestion($scope.question).success(function(data) {
+
+                if(data == 'question exist')
+                {
+                    $mdDialog.show(
+                        $mdDialog.alert()
+                            .parent(angular.element(document.querySelector('#popupContainer')))
+                            .clickOutsideToClose(true)
+                            .title('Question create failed.')
+                            .content('Question Number alredy exist.')
+                            .ariaLabel('')
+                            .ok('Ok')
+                        );
+                }else if(data == 'success')
+                {
+                    $scope.openQuestions();
+                }else
+                {
+                    alert(JSON.stringify(data));
+                }
+            });
+        }
 
     }]);
 
+ scotchApp.controller('managerController', ['$rootScope', '$scope', 'myservice','elec','$location',function($rootScope, $scope, myservice,elec,$location) {
+        // create a message to display in our view
+        // $scope.message = myservice.user;
+
+        // elec.getPoll().success(function(data) {
+        //     $scope.loading = false;
+        //     $scope.polls = data;
+
+        // });
+
+        // $scope.pollClick = function(_id)
+        // {
+        //     myservice.id = _id;
+        //     $location.path('questions'); // path not hash
+        // }
+        alert('Manager Controller');
+
+    }]);
 
     scotchApp.controller('signupController', ['$rootScope', '$scope', 'myservice','elec','$location','$mdDialog',function($rootScope, $scope, myservice,elec,$location,$mdDialog) {
         // create a message to display in our view
@@ -276,7 +462,15 @@
                     else
                         $scope.$parent.isAdmin = false;
 
-                    $location.path('polls');  
+                    if(myservice.userRole == 'manager')
+                        $location.path('manager');  
+                    else if(myservice.userRole == 'admin')
+                        $location.path('admin');  
+                    else if(myservice.userRole == 'user')
+                        $location.path('polls');  
+                    else
+                        alert('NO USER ROLE???? Contact Administrator');
+
                 }
 
             });  
