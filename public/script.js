@@ -66,7 +66,6 @@
             elec.getUsers().success(function(data) {
                 $scope.users = data;
                 $scope.managers = [];
-                debugger;
                 for(var i in $scope.users)
                 {
                     if($scope.users[i].userRole == 'manager')
@@ -299,11 +298,37 @@
             }); 
         }
 
+        $scope.openQuestion = function(index)
+        {
+            $scope.page = 'question'; 
+            $scope.isNew = false; 
+            $scope.question = $scope.questions[index];
+        }
+
         $scope.addQuestion = function()
         {
             $scope.page = 'question';
             $scope.isNew = true;
             $scope.question = {};
+        }
+
+        $scope.delQuestion = function()
+        {
+            elec.deleteQuestion($scope.question._id).success(function(data) {
+                $scope.openQuestions();
+            }); 
+        }
+
+        $scope.addAnswer = function()
+        {
+            if(typeof $scope.question.questionAnswers == 'undefined')
+                $scope.question.questionAnswers = [];
+            $scope.question.questionAnswers.push('');
+        }
+
+        $scope.deleteAnswer = function(index)
+        {
+            $scope.question.questionAnswers.splice(index, 1);
         }
 
         $scope.newQuestion = function()
@@ -335,22 +360,18 @@
 
     }]);
 
- scotchApp.controller('managerController', ['$rootScope', '$scope', 'myservice','elec','$location',function($rootScope, $scope, myservice,elec,$location) {
-        // create a message to display in our view
-        // $scope.message = myservice.user;
+    scotchApp.controller('managerController', ['$rootScope', '$scope', 'myservice','elec','$location',function($rootScope, $scope, myservice,elec,$location) {
 
-        // elec.getPoll().success(function(data) {
-        //     $scope.loading = false;
-        //     $scope.polls = data;
+        elec.getManagerUsers(myservice.username).success(function(data) {
+            $scope.loading = false;
+            $scope.users = data;
+        });
 
-        // });
-
-        // $scope.pollClick = function(_id)
-        // {
-        //     myservice.id = _id;
-        //     $location.path('questions'); // path not hash
-        // }
-        alert('Manager Controller');
+        $scope.openUser = function(index)
+        {
+            myservice.currUser = $scope.users[index];
+            $location.path('polls');
+        }
 
     }]);
 
@@ -407,22 +428,94 @@
 
         $scope.pollClick = function(_id)
         {
-            myservice.id = _id;
+            myservice.currPoll = _id;
             $location.path('questions'); // path not hash
         }
 
 
     }]);
 
-        scotchApp.controller('questionsController', ['$rootScope', '$scope', 'myservice','elec','$location',function($rootScope, $scope, myservice,elec,$location) {
+    scotchApp.controller('questionsController', ['$rootScope', '$scope', 'myservice','elec','$location','$mdDialog',function($rootScope, $scope, myservice,elec,$location,$mdDialog) {
         // create a message to display in our view
-        elec.getQuestion(myservice.id)
-			.success(function(data) {
-				$scope.loading = false;
-				$scope.formData = {}; // clear the form so our user is ready to enter another
-				// $scope.polls = data; // assign our new list of todos
-				$scope.questions = data;
-			});
+        elec.getQuestion(myservice.currPoll)
+            .success(function(data) {
+
+                $scope.questions = data;
+                 elec.getResults(myservice.currPoll,myservice.currUser.userPollingStation)
+                    .success(function(data) {
+
+                        $scope.answers = data;
+                        $scope.mapData();
+                        $scope.loading = false;
+                    });
+            });
+
+
+
+        $scope.mapData = function()
+        {
+            for(var i in $scope.questions) 
+            {
+                for(var j in $scope.answers)
+                {
+                    if($scope.questions[i].questionNumber == $scope.answers[j].q)
+                    {
+                        $scope.questions[i].questionResult = $scope.answers[j].r;
+                        break;
+                    }
+                }
+            }
+        }  
+
+        $scope.submit = function()
+        {
+            var data = {
+                resultPoll : myservice.currPoll,
+                resultStation : myservice.currUser.userPollingStation,
+                resultAnswers : [],
+            }
+
+            for(var i in $scope.questions)
+            {
+                var result = {
+                    q:$scope.questions[i].questionNumber,
+                    r:$scope.questions[i].questionResult
+                };
+                data.resultAnswers.push(result);
+            }
+
+            elec.createResult(data).success(function(data) {
+
+                // if(data == 'station exist')
+                // {
+               
+                if(data == 'success')
+                {
+                    $mdDialog.show(
+                        $mdDialog.alert()
+                            .parent(angular.element(document.querySelector('#popupContainer')))
+                            .clickOutsideToClose(true)
+                            .title('Submit Successfull.')
+                            .content(JSON.stringify(data))
+                            .ariaLabel('')
+                            .ok('Ok')
+                    );
+                    $location.path('polls');
+                }else
+                {
+                    $mdDialog.show(
+                        $mdDialog.alert()
+                            .parent(angular.element(document.querySelector('#popupContainer')))
+                            .clickOutsideToClose(true)
+                            .title('Submit failed.')
+                            .content(JSON.stringify(data))
+                            .ariaLabel('')
+                            .ok('Ok')
+                    );
+                }
+            });
+        }
+
     }]);
 
 
@@ -462,14 +555,22 @@
                     else
                         $scope.$parent.isAdmin = false;
 
+                    $scope.$parent.userRole = myservice.userRole;
                     if(myservice.userRole == 'manager')
+                    {
                         $location.path('manager');  
+                    }
                     else if(myservice.userRole == 'admin')
+                    {
                         $location.path('admin');  
+                    }
                     else if(myservice.userRole == 'user')
+                    {   
+                        myservice.currUser = data;
                         $location.path('polls');  
+                    }
                     else
-                        alert('NO USER ROLE???? Contact Administrator');
+                        alert('NO USER ROLE???? Contact Administrator ' + myservice.userRole);
 
                 }
 
@@ -508,5 +609,6 @@
         this.loggedIn = false;
         this.username = "";
         this.password = "";
+        this.currPoll = "";
     });
 

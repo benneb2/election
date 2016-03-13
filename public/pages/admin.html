@@ -189,6 +189,41 @@
 				    </md-list>
 				  </md-content>
             </div>
+            <div ng-show="page == 'question'" ng-if="!isNew">
+            	<md-content>
+            	<div layout-gt-sm="row">
+			          <md-input-container class="md-block" flex-gt-sm>
+			            <label>Question Number</label>
+			            <input  ng-model='question.questionNumber' disabled>
+			          </md-input-container>
+		         </div>
+		         <div layout-gt-sm="row">
+			          <md-input-container class="md-block" flex-gt-sm>
+			            <label>Question</label>
+			            <input  ng-model='question.questionQuestion' disabled>
+			          </md-input-container>
+		         </div>
+		         <div layout-gt-sm="row">
+ 					<md-input-container class="md-block" flex-gt-sm>
+            			<label>Type</label>
+            			<md-select ng-model="question.questionType" disabled>
+              				<md-option ng-repeat="type in types" value="{{type}}">
+                				{{type}}
+              				</md-option>
+            			</md-select>
+          			</md-input-container>
+          		</div>
+          		<md-divider></md-divider>
+          		<div ng-show="question.questionType == 'multichoice'">
+          			<md-list>
+  						<md-list-item class="secondary-button-padding" ng-repeat="answer in question.questionAnswers track by $index">
+						    <input  ng-model='question.questionAnswers[$index]' style='width:90%' disabled>
+						</md-list-item>
+					</md-list>
+          		</div>
+          		<md-button ng-click="openQuestions()">Back</md-button> 
+				<md-button ng-click="delQuestion()">Delete Question</md-button> 
+            </div>
             <div ng-show="page == 'question'" ng-if="isNew">
             	<md-content>
             	<div layout-gt-sm="row">
@@ -213,8 +248,18 @@
             			</md-select>
           			</md-input-container>
           		</div>
-				<md-button ng-show='isNew' ng-click="newQuestion()">Add Question</md-button> 
-				<md-button ng-show='!isNew' ng-click="delQuestion()">Delete Question</md-button> 
+          		<md-divider></md-divider>
+          		<div ng-show="question.questionType == 'multichoice'">
+          			<md-button ng-click="addAnswer()">Add Answer</md-button> 
+          			<md-list>
+  						<md-list-item class="secondary-button-padding" ng-repeat="answer in question.questionAnswers track by $index">
+						    <input  ng-model='question.questionAnswers[$index]' style='width:90%'>
+						    <md-button class="md-secondary" ng-click="deleteAnswer($index)">Delete</md-button>
+						</md-list-item>
+					</md-list>
+          		</div>
+          		<md-button ng-click="openQuestions()">Back</md-button> 
+				<md-button ng-click="newQuestion()">Add Question</md-button> 
             </div>
 
     </div>

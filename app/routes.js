@@ -93,7 +93,7 @@ function getUser(res,userName,password){
 				res.send(err)
 
 			if(results.length > 0)
-				res.json(results[0]); // return all results in JSON format
+				res.send(results[0]); // return all results in JSON format
 			else
 				res.send('fail');
 		});
@@ -102,6 +102,28 @@ function getUser(res,userName,password){
 
 module.exports = function(app) {
 
+// fulfils pre-flight/promise request
+app.options('*', function(req, res,next) {
+	console.log('here');
+    next();
+});
+
+app.all('/*', function(req, res, next) {
+  // res.header("Access-Control-Allow-Origin", "*");
+  // res.header("Access-Control-Allow-Headers", "X-Requested-With","Content-Type","Origin","Authorization","Accept","Client-Security-Token","Accept-Encoding");
+  // res.header("Access-Control-Allow-Methods", "GET, POST","PUT","OPTIONS","DELETE");
+  // res.header("Access-Control-Allow-Credentials", "true");
+
+  res.header('Access-Control-Allow-Origin', req.headers.origin);
+  res.header('Access-Control-Allow-Methods', 'POST, GET, PUT, DELETE, OPTIONS');
+  res.header('Access-Control-Allow-Credentials', false);
+  res.header('Access-Control-Max-Age', '86400');
+  res.header('Access-Control-Allow-Headers', 'X-Requested-With, X-HTTP-Method-Override, Content-Type, Accept,Access-Control-Allow-Headers');
+ 
+
+  next();
+
+});
 	// api ---------------------------------------------------------------------
 	// POLLS -------------------------------------------------------------------
 	app.get('/api/polls', function(req, res) {
@@ -209,6 +231,7 @@ module.exports = function(app) {
 				questionNumber : req.body.questionNumber,
 				questionQuestion : req.body.questionQuestion,
 				questionType : req.body.questionType,
+				questionAnswers : req.body.questionAnswers,
 				isDeleted : false,
 			};
 
@@ -245,10 +268,22 @@ module.exports = function(app) {
 	// api ---------------------------------------------------------------------
 	// RESULTS -----------------------------------------------------------------
 
-	app.get('/api/resultsUser/:pollId/:userId', function(req, res) {
+	app.get('/api/results/:pollId/:station', function(req, res) {
 		// use mongoose to get all poll in the database
-		console.log("GET resultsUser " + req.params.pollId + ' ' + req.params.userId);
-		getResultUser(res,req.params.pollId,req.params.userId);
+		console.log("GET resultsUser " + req.params.pollId + ' ' + req.params.station);
+		resultDB.find({resultPoll:req.params.pollId,resultStation:req.params.station},function(err, results) {
+
+			console.log('here:' + JSON.stringify(results));
+			// if there is an error retrieving, send the error. nothing after res.send(err) will execute
+			if (err)
+				res.send(err)
+
+			if(results.length > 0)
+				res.json(results[0].resultAnswers); // return all results in JSON format
+			else
+				res.json([]);
+		});
+
 	});
 
 	app.get('/api/resultsQuestion/:question_id', function(req, res) {
@@ -261,25 +296,49 @@ module.exports = function(app) {
 		// create a poll, information comes from AJAX request from Angular
 		console.log("POST RESULTS " + JSON.stringify(req.body));
 
-		var resultData = {
-			resultPoll : req.body.resultPoll,
-			resultQuestion : req.body.resultQuestion,
-			resultAnswer : req.body.resultAnswer,
-			resultUser : req.body.resultUser,
-			isDeleted : false,
-		};
-		// console.log(JSON.stringify(polldata));
+		resultDB.find({resultPoll:req.body.resultPoll,resultStation:req.body.resultStation},function(err, results) {
 
-		resultDB.create(resultData, function(err, resultData) {
-			if (err)
-			{
-				console.log("err " + err);
+			console.log(results);
+			if(err)
 				res.send(err);
+
+			if(results && results.length > 0)
+			{
+				console.log("Update Exist")
+				var result = results[0];
+				result.resultAnswers = req.body.resultAnswers;
+				resultDB.update({"_id": result._id},result, function(err, userData) {
+					if (err)
+					{
+						console.log("err " + err);
+						res.send(err);
+					}else
+					{	
+						res.send("success");
+					}
+				});
+
+				return;
 			}
-				res.json(true);
-			// console.log("poll.create " + JSON.stringify(pollData));
-			// get and return all the polls after you create another
-			// getQuestion(res,req.body.questionPoll);
+
+			var resultData = {
+				resultPoll : req.body.resultPoll,
+				resultStation : req.body.resultStation,
+				resultAnswers : req.body.resultAnswers,
+				isDeleted : false,
+			};
+			// console.log(JSON.stringify(polldata));
+			resultDB.create(resultData, function(err, resultData) {
+				if (err)
+				{
+					console.log("err " + err);
+					res.send(err);
+				}else
+				{	
+					res.send("success");
+				}
+			});
+
 		});
 
 	});
@@ -302,7 +361,27 @@ module.exports = function(app) {
 
 
 // USERS -------------------------------------------------------------------
-	app.get('/api/users', function(req, res) {
+
+
+	app.get('/api/managerUser/:manager', function(req, res) {
+		// use mongoose to get all polls in the database
+		console.log("GET MANAGER USER " + req.params.manager);
+
+		userDB.find({userManager:req.params.manager},function(err, users) {
+
+			// if there is an error retrieving, send the error. nothing after res.send(err) will execute
+			if (err)
+				res.send(err)
+
+			if(users.length > 0)
+				res.json(users); // return all results in JSON format
+			else
+				res.send('fail');
+		});
+
+	});
+
+	app.get('/api/users/', function(req, res) {
 		// use mongoose to get all polls in the database
 		console.log("GET USERS");
 		getUsers(res);
@@ -437,7 +516,7 @@ module.exports = function(app) {
 	// POLLING STATION ---------------------------------------------------------
 	app.get('/api/station', function(req, res) {
 		// use mongoose to get all polls in the database
-		console.log("GET USERS");
+		console.log("GET Stations");
 		getStations(res);
 	});
 

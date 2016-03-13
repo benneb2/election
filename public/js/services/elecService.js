@@ -6,7 +6,7 @@ angular.module('elecService', [])
 		return {
 			//POLLS
 			getPoll : function() {
-				return $http.get('http://localhost:8080/api/polls');
+				return $http.get('/api/polls');
 			},
 			createPoll : function(formData) {
 				return $http.post('/api/polls', formData);
@@ -27,6 +27,9 @@ angular.module('elecService', [])
 			},
 
 			//RESULTS
+			getResults : function(pollId,station) {
+				return $http.get('/api/results/' + pollId + '/' + station);
+			},
 			getResultUser : function(pollId,userId) {
 				return $http.get('/api/resultsUser/' + pollId + '/' + userId);
 			},
@@ -40,7 +43,11 @@ angular.module('elecService', [])
 				return $http.delete('/api/results/' + id);
 			},
 
+
 			//USERS
+			getManagerUsers : function(manager) {
+				return $http.get('/api/managerUser/' +  manager);
+			},
 			getUsers : function() {
 				return $http.get('/api/users' );
 			},
