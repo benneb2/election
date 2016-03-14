@@ -59,7 +59,7 @@
         // create a message to display in our view
         $scope.page = "";
         $scope.roles = ['user','manager','admin'];
-        $scope.types = ['multichoice','number'];
+        $scope.types = ['radio button','multichoice','number','text'];
         //Get Date Beforehand
         $scope.refreshUsers = function()
         {

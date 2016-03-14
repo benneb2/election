@@ -214,7 +214,7 @@
           			</md-input-container>
           		</div>
           		<md-divider></md-divider>
-          		<div ng-show="question.questionType == 'multichoice'">
+          		<div ng-show="question.questionType == 'multichoice' || question.questionType == 'radio button'" >
           			<md-list>
   						<md-list-item class="secondary-button-padding" ng-repeat="answer in question.questionAnswers track by $index">
 						    <input  ng-model='question.questionAnswers[$index]' style='width:90%' disabled>
@@ -249,7 +249,7 @@
           			</md-input-container>
           		</div>
           		<md-divider></md-divider>
-          		<div ng-show="question.questionType == 'multichoice'">
+          		<div ng-show="question.questionType == 'multichoice' || question.questionType == 'radio button'">
           			<md-button ng-click="addAnswer()">Add Answer</md-button> 
           			<md-list>
   						<md-list-item class="secondary-button-padding" ng-repeat="answer in question.questionAnswers track by $index">

@@ -6,11 +6,8 @@
   <div class="md-list-item-text" style="width:100%">
     <table style="width:100%">
       <tr>
-        <td style="float:left;nowrap">
-          {{question.questionNumber}}.
-        </td>
-        <td width="99%" align="left">
-          {{question.questionQuestion}}
+        <td width="99%" align="left" valign="top">
+          {{question.questionNumber}}. {{question.questionQuestion}}
         </td>
         <td style="float:right;nowrap">
           <div ng-if="question.questionType == 'multichoice'">
@@ -18,8 +15,18 @@
               <option ng-repeat="answer in question.questionAnswers" value="{{answer}}">{{answer}}</option>
             </select>
           </div>
+           <div ng-if="question.questionType == 'radio button'">
+            <md-radio-group ng-model="question.questionResult" class="md-primary">
+                <md-radio-button ng-repeat="answer in question.questionAnswers" ng-value="answer">
+                    {{ answer }}<br/>
+                </md-radio-button>
+            </md-radio-group>
+          </div>
           <div ng-if="question.questionType == 'number'">
             <input type="number" step="1" ng-model="question.questionResult"/>
+          </div>
+          <div ng-if="question.questionType == 'text'">
+            <input type="text" step="1" ng-model="question.questionResult"/>
           </div>
         </td>
       </tr>
