@@ -5,8 +5,9 @@ var questionDB = require('./models/question');
 var resultDB = require('./models/result');
 var userDB = require('./models/users');
 var stationDB = require('./models/pollingStations');
+var userPublicDB = require('./models/usersPublic');
 var util = require('util');
-
+var mongoose   = require('mongoose');
 
 function getPolls(res){
 	pollDB.find(function(err, polls) {
@@ -19,6 +20,117 @@ function getPolls(res){
 		});
 };
 
+function getIncidents(res)
+{
+	resultDB.find({resultPoll:'57974998331f664b1a8e7f74'}).sort({$natural:-1}).exec(function(err, results) {
+
+		if (err)
+				res.send(err)
+
+		userPublicDB.find(function(err, users) {
+
+			// if there is an error retrieving, send the error. nothing after res.send(err) will execute
+			if (err)
+				res.send(err)
+
+			var returnObj = [];
+			for(var i in results)
+			{
+				for(var j in users)
+				{
+					if(results[i].resultUser == users[j]._id)
+					{
+						var tmp = {};
+						tmp.name = users[j].userName + ' ' + users[j].userSurname;
+						tmp.tel = users[j].userTelephone;
+						tmp.lat = users[j].userLat;
+						tmp.lon = users[j].userLon;
+						tmp.result = results[i].resultAnswers;
+
+						returnObj.push(tmp);
+						break;
+					}
+				}
+			}
+			res.json(returnObj); // return all results in JSON format
+		});
+
+	});
+//
+}
+
+
+function getObPolls(res){
+
+	var date = new Date();
+	date = new Date(1970,0,1,date.getHours(),date.getMinutes(),date.getSeconds());
+	// date = new Date(date.setHours(date.getHours() - 2));
+
+	pollDB.find({pollPublic:false},function(err, polls) {
+
+
+			// if there is an error retrieving, send the error. nothing after res.send(err) will execute
+			if (err)
+				res.send(err)
+
+			console.log(JSON.stringify(polls));
+			var returnPolls = [];
+			for(var i in polls)
+			{
+				if(typeof polls[i].pollStartTime == 'undefined')
+				{
+					continue;
+				}
+
+				var startTime = new Date(polls[i].pollStartTime);
+				var endTime = new Date(polls[i].pollEndTime);
+
+				if(startTime.getTime() < date.getTime() && endTime.getTime() > date.getTime())
+				{
+					returnPolls.push(polls[i]);
+				}
+			}
+
+			res.json(returnPolls); // return all polls in JSON format
+		});
+};
+
+function getPubPolls(res){
+
+	var date = new Date();
+	date = new Date(1970,0,1,date.getHours(),date.getMinutes(),date.getSeconds());
+	// date = new Date(date.setHours(date.getHours() - 2));
+
+
+	pollDB.find({pollPublic:true},function(err, polls) {
+
+			// if there is an error retrieving, send the error. nothing after res.send(err) will execute
+			if (err)
+				res.send(err)
+
+			var returnPolls = [];
+			for(var i in polls)
+			{
+				if(typeof polls[i].pollStartTime == 'undefined')
+				{
+					continue;
+				}
+
+				var startTime = new Date(polls[i].pollStartTime);
+				var endTime = new Date(polls[i].pollEndTime);
+
+				if(startTime.getTime() < date.getTime() && endTime.getTime() > date.getTime())
+				{
+					returnPolls.push(polls[i]);
+				}
+			}
+
+			res.json(returnPolls); // return all polls in JSON format
+		});
+};
+
+
+
 function getPoll(res,req){
 	pollDB.find({_id:req.params.poll_id},function(err, polls) {
 
@@ -30,11 +142,27 @@ function getPoll(res,req){
 		});
 };
 
+var reA = /[^a-zA-Z]/g;
+var reN = /[^0-9]/g;
+function sortAlphaNum(a,b) {
+    var aA = a.questionNumber.replace(reA, "");
+    var bA = b.questionNumber.replace(reA, "");
+    if(aA === bA) {
+        var aN = parseInt(a.questionNumber.replace(reN, ""), 10);
+        var bN = parseInt(b.questionNumber.replace(reN, ""), 10);
+        return aN === bN ? 0 : aN > bN ? 1 : -1;
+    } else {
+        return aA > bA ? 1 : -1;
+    }
+}
+
 function getQuestion(res,pollId){
-	questionDB.find({questionPoll:pollId},function(err, polls) {
+	questionDB.find({questionPoll:pollId},null,{sort:'questionNumber'},function(err, polls) {
 			// if there is an error retrieving, send the error. nothing after res.send(err) will execute
 			if (err)
 				res.send(err)
+
+			var retPolls = polls.sort(sortAlphaNum);
 			res.json(polls); // return all polls in JSON format
 		});
 };
@@ -62,8 +190,21 @@ function getResultUser(res,pollId,userId){
 		});
 };
 
+
+
 function getUsers(res){
 	userDB.find(function(err, results) {
+
+			// if there is an error retrieving, send the error. nothing after res.send(err) will execute
+			if (err)
+				res.send(err)
+
+			res.json(results); // return all results in JSON format
+		});
+};
+
+function getPubUsers(res){
+	userPublicDB.find(function(err, results) {
 
 			// if there is an error retrieving, send the error. nothing after res.send(err) will execute
 			if (err)
@@ -132,6 +273,23 @@ app.all('/*', function(req, res, next) {
 		getPolls(res);
 	});
 
+
+	app.get('/api/pollsOb', function(req, res) {
+		// use mongoose to get all polls in the database
+		console.log("GET POLLS");
+		getObPolls(res);
+	});
+
+
+
+	app.get('/api/pollsPub', function(req, res) {
+		// use mongoose to get all polls in the database
+		console.log("GET POLLS");
+		getPubPolls(res);
+	});
+
+	
+
 	app.get('/api/poll/:poll_id', function(req, res) {
 		// use mongoose to get all poll in the database
 		console.log("GET POLL " + req.params.poll_id);
@@ -164,6 +322,11 @@ app.all('/*', function(req, res, next) {
 			var polldata = {
 				pollName : req.body.pollName,
 				pollDesc : req.body.pollDesc,
+				pollPublic : req.body.pollPublic,
+				pollCreateNew : req.body.pollCreateNew,
+				pollStartTime : req.body.pollStartTime,
+				pollEndTime : req.body.pollEndTime,
+				pollInterval : req.body.pollInterval,
 				isDeleted : false,
 				done : false
 			};
@@ -267,8 +430,7 @@ app.all('/*', function(req, res, next) {
 
 	// api ---------------------------------------------------------------------
 	// RESULTS -----------------------------------------------------------------
-
-	app.get('/api/results/:pollId/:station', function(req, res) {
+	app.get('/api/results/:result_id', function(req, res) {
 		// use mongoose to get all poll in the database
 		console.log("GET resultsUser " + req.params.pollId + ' ' + req.params.station);
 		resultDB.find({resultPoll:req.params.pollId,resultStation:req.params.station},function(err, results) {
@@ -286,6 +448,79 @@ app.all('/*', function(req, res, next) {
 
 	});
 
+	app.get('/api/results/:pollId/:station', function(req, res) {
+
+		var date = new Date();
+		date = new Date(1970,0,1,date.getHours(),date.getMinutes(),date.getSeconds());
+		// console.log(date);
+		// date = new Date(date.setHours(date.getHours() - 2));
+		// use mongoose to get all poll in the database
+		console.log("GET resultsUser " + req.params.pollId + ' ' + req.params.station);
+		resultDB.find({resultPoll:req.params.pollId,resultStation:req.params.station},function(err, results) {
+			console.log('here:' + JSON.stringify(results));
+
+
+				if (err)
+				{
+					res.send(err);
+					return;
+				}
+
+				if(results.length > 0)
+				{
+					pollDB.find({"_id":req.params.pollId},function(err, polls) {
+
+						if (err)
+						{
+							res.send(err);
+							return;
+						}
+
+						var startTime = new Date(polls[0].pollStartTime);
+						var interval = polls[0].pollInterval;
+
+						var hoursDif = Math.floor(Math.abs(date.getTime() - startTime.getTime()) / 36e5);
+						var intervalCount = Math.floor(hoursDif/interval)
+						console.log('hoursDif ' + hoursDif);
+						console.log('intervalCount ' + intervalCount);
+						console.log('herePoll:' + JSON.stringify(polls));
+						for(var i in results)
+						{
+							if(results[i].resultInterval == intervalCount)
+							{
+								res.json(results[i].resultAnswers);
+								return;
+							}
+						}
+						res.json([]);
+					})
+				}
+				else
+				{
+					res.json([]);
+				}
+		});
+
+	});
+
+	app.get('/api/pollResults/:pollId/', function(req, res) {
+		// use mongoose to get all poll in the database
+		console.log("GET Pollresults " + req.params.pollId );
+		resultDB.find({resultPoll:req.params.pollId},function(err, results) {
+
+			console.log('here:' + JSON.stringify(results));
+			// if there is an error retrieving, send the error. nothing after res.send(err) will execute
+			if (err)
+				res.send(err)
+
+			if(results.length > 0)
+				res.json(results); // return all results in JSON format
+			else
+				res.json([]);
+		});
+
+	});
+
 	app.get('/api/resultsQuestion/:question_id', function(req, res) {
 		// use mongoose to get all poll in the database
 		console.log("GET resultsQuestion " + req.params.question_id);
@@ -295,39 +530,38 @@ app.all('/*', function(req, res, next) {
 	app.post('/api/results', function(req, res) {
 		// create a poll, information comes from AJAX request from Angular
 		console.log("POST RESULTS " + JSON.stringify(req.body));
+		var date = new Date();
+		date = new Date(1970,0,1,date.getHours(),date.getMinutes(),date.getSeconds());
 
-		resultDB.find({resultPoll:req.body.resultPoll,resultStation:req.body.resultStation},function(err, results) {
-
-			console.log(results);
-			if(err)
-				res.send(err);
-
-			if(results && results.length > 0)
-			{
-				console.log("Update Exist")
-				var result = results[0];
-				result.resultAnswers = req.body.resultAnswers;
-				resultDB.update({"_id": result._id},result, function(err, userData) {
-					if (err)
-					{
-						console.log("err " + err);
-						res.send(err);
-					}else
-					{	
-						res.send("success");
-					}
-				});
-
-				return;
-			}
-
+		if(typeof req.body.createNew != 'undefined' && req.body.createNew == true)
+		{
 			var resultData = {
 				resultPoll : req.body.resultPoll,
-				resultStation : req.body.resultStation,
 				resultAnswers : req.body.resultAnswers,
 				isDeleted : false,
 			};
-			// console.log(JSON.stringify(polldata));
+			if(typeof req.body.resultStation != 'undefined')
+			{
+				resultData.resultStation = req.body.resultStation;
+			}
+
+			if(typeof req.body.user != 'undefined')
+			{
+				resultData.resultUser = req.body.user;
+			}
+
+			if(typeof req.body.resultLat != 'undefined')
+			{
+				resultData.resultLat = req.body.resultLat;
+			}
+
+			if(typeof req.body.resultLon != 'undefined')
+			{
+				resultData.resultLon = req.body.resultLon;
+			}
+
+
+				// console.log(JSON.stringify(polldata));
 			resultDB.create(resultData, function(err, resultData) {
 				if (err)
 				{
@@ -338,11 +572,157 @@ app.all('/*', function(req, res, next) {
 					res.send("success");
 				}
 			});
+		}else
+		{
+			resultDB.find({resultPoll:req.body.resultPoll,resultStation:req.body.resultStation},function(err, results) {
 
-		});
+				console.log(results);
+				if(err)
+					res.send(err);
+
+
+				pollDB.find({"_id":req.body.resultPoll},function(err, polls) {
+
+					if (err)
+					{
+						res.send(err);
+						return;
+					}
+
+					console.log(JSON.stringify(polls));
+					var startTime = new Date(polls[0].pollStartTime);
+					var interval = polls[0].pollInterval;
+
+					var hoursDif = Math.floor(Math.abs(date.getTime() - startTime.getTime()) / 36e5);
+					var intervalCount = Math.floor(hoursDif/interval)
+
+					console.log('intervalCount ' + intervalCount);
+
+					if(results && results.length > 0)
+					{
+						console.log("Update Exist")
+						
+						var found = false;
+						for(var i in results)
+						{
+							if(results[i].resultInterval == intervalCount)
+							{
+								found = true;
+								var result = results[i];
+								break;
+							}
+						}
+
+						if(found)
+						{
+							console.log('FOUND ' + intervalCount);
+
+							result.resultAnswers = req.body.resultAnswers;
+							if(typeof req.body.resultLat != 'undefined')
+							{
+								result.resultLat = req.body.resultLat;
+							}
+
+							if(typeof req.body.resultLon != 'undefined')
+							{
+								result.resultLon = req.body.resultLon;
+							}
+
+							resultDB.update({"_id": result._id},result, function(err, userData) {
+								if (err)
+								{
+									console.log("err " + err);
+									res.send(err);
+								}else
+								{	
+									res.send("success");
+								}
+							});
+						}else
+						{
+							console.log('CREATE NEW ' + intervalCount );
+
+							var resultData = {
+								resultPoll : req.body.resultPoll,
+								resultStation : req.body.resultStation,
+								resultAnswers : req.body.resultAnswers,
+								resultInterval : intervalCount,
+								isDeleted : false,
+							};
+
+							if(typeof req.body.resultLat != 'undefined')
+							{
+								resultData.resultLat = req.body.resultLat;
+							}
+
+							if(typeof req.body.resultLon != 'undefined')
+							{
+								resultData.resultLon = req.body.resultLon;
+							}
+
+							// console.log(JSON.stringify(polldata));
+							resultDB.create(resultData, function(err, resultData) {
+								if (err)
+								{
+									console.log("err " + err);
+									res.send(err);
+								}else
+								{	
+									res.send("success");
+								}
+							});
+						}
+						
+					}else
+					{
+						console.log('CREATE NEW ' + intervalCount);
+						var resultData = {
+							resultPoll : req.body.resultPoll,
+							resultStation : req.body.resultStation,
+							resultAnswers : req.body.resultAnswers,
+							resultInterval : intervalCount,
+							isDeleted : false,
+						};
+
+						if(typeof req.body.resultLat != 'undefined')
+						{
+							resultData.resultLat = req.body.resultLat;
+						}
+
+						if(typeof req.body.resultLon != 'undefined')
+						{
+							resultData.resultLon = req.body.resultLon;
+						}
+
+						// console.log(JSON.stringify(polldata));
+						resultDB.create(resultData, function(err, resultData) {
+							if (err)
+							{
+								console.log("err " + err);
+								res.send(err);
+							}else
+							{	
+								res.send("success");
+							}
+						});
+					}
+					// for(var i in results)
+					// {
+					// 	if(results[i].resultInterval == intervalCount)
+					// 	{
+					// 		res.json(results[0].resultAnswers);
+					// 		return;
+					// 	}
+					// }
+					// res.json([]);
+				})
+
+			});
+		}
 
 	});
 
+	
 	// delete a poll
 	app.delete('/api/results/:result_id', function(req, res) {
 		resultDB.remove({
@@ -381,13 +761,31 @@ app.all('/*', function(req, res, next) {
 
 	});
 
+	app.get('/api/incidents/', function(req, res) {
+		// use mongoose to get all polls in the database
+		console.log("GET incidents");
+		getIncidents(res);
+	});
+
 	app.get('/api/users/', function(req, res) {
 		// use mongoose to get all polls in the database
 		console.log("GET USERS");
 		getUsers(res);
 	});
 
+	app.get('/api/usersPub/', function(req, res) {
+		// use mongoose to get all polls in the database
+		console.log("GET USERS");
+		getPubUsers(res);
+	});
+
 	app.get('/api/users/:userName/:password', function(req, res) {
+		// use mongoose to get all poll in the database
+		console.log("GET USER " + req.params.userName + " " + req.params.password);
+		getUser(res,req.params.userName,req.params.password);
+	});
+
+	app.get('/api/users/:userName/:password/:lat/:lon', function(req, res) {
 		// use mongoose to get all poll in the database
 		console.log("GET USER " + req.params.userName + " " + req.params.password);
 		getUser(res,req.params.userName,req.params.password);
@@ -445,6 +843,40 @@ app.all('/*', function(req, res, next) {
 				// getUsers(res);
 			});
 		});
+
+	});
+
+	app.post('/api/usersPub', function(req, res) {
+		// create a poll, information comes from AJAX request from Angular
+		console.log("POST Pub USERS " + JSON.stringify(req.body));
+
+			var userData = {
+				userName : req.body.name,
+				userSurname : req.body.surname,
+				userTelephone : req.body.telephone,
+			};
+
+			if(typeof req.body.userLat != 'undefined')
+			{
+				userData.userLat = req.body.userLat;
+				userData.userLon = req.body.userLon;
+			}
+
+			userPublicDB.create(userData, function(err, userData) {
+				if (err)
+				{
+					console.log("err " + err);
+					res.send(err);
+				}else
+				{	
+					res.send(userData);
+				}
+				// console.log("poll.create " + JSON.stringify(pollData));
+				// get and return all the polls after you create another
+				// console.log(userData);
+
+				// getUsers(res);
+			});
 
 	});
 

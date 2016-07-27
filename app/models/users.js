@@ -5,6 +5,8 @@ module.exports = mongoose.model('users', {
 	userUserName : {type : String, default: ''},
 	userSurname : {type : String, default: ''},
 	userPassword : {type : String, default: ''},
+	userLon : {type : String, default: ''},
+	userLat : {type : String, default: ''},
 	userPollingStation : {type : String, default: ''},
 	userType : {type : String, default: ''},
 	userEmail : {type : String, default: ''},
