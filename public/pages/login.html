@@ -2,7 +2,10 @@
 	<md-container>
         <div class="box">
 		<h1>Log In</h1>
-		 <div layout-gt-sm="row">
+    <p class="text-center" ng-show="loading">
+            <span class="fa fa-spinner fa-spin fa-3x"></span>
+    </p>
+		 <div layout-gt-sm="row" ng-show="!loading">
           <md-input-container class="md-block" flex-gt-sm>
             <label>Username</label>
             <input ng-model='username'>

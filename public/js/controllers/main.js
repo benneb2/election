@@ -1,4 +1,4 @@
-var app = angular.module('todoController', ['ngMaterial','ngRoute']);
+var app = angular.module('todoController', ['ngMaterial','ngRoute','uiGmapgoogle-maps']);
 
 
 app.config(function($routeProvider) {
@@ -34,6 +34,12 @@ app.config(function($routeProvider) {
 		elec.getUsers().success(function(data) {
 				$scope.loading = false;
 				$scope.users = data;
+			});
+
+
+		elec.getUsersPub().success(function(data) {
+				$scope.loading = false;
+				$scope.usersPub = data;
 			});
 
 		elec.getStations().success(function(data) {

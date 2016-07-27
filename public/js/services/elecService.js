@@ -30,6 +30,9 @@ angular.module('elecService', [])
 			getResults : function(pollId,station) {
 				return $http.get('/api/results/' + pollId + '/' + station);
 			},
+			getPollResult : function(pollId) {
+				return $http.get('/api/pollResults/' + pollId );
+			},
 			getResultUser : function(pollId,userId) {
 				return $http.get('/api/resultsUser/' + pollId + '/' + userId);
 			},
@@ -44,12 +47,18 @@ angular.module('elecService', [])
 			},
 
 
+			getIncidents : function() {
+				return $http.get('/api/incidents' );
+			},
 			//USERS
 			getManagerUsers : function(manager) {
 				return $http.get('/api/managerUser/' +  manager);
 			},
 			getUsers : function() {
 				return $http.get('/api/users' );
+			},
+			getUsersPub : function() {
+				return $http.get('/api/usersPub' );
 			},
 			getUser : function(userName,password) {
 				return $http.get('/api/users/' + userName + '/' + password);
@@ -63,7 +72,11 @@ angular.module('elecService', [])
 			updateUser: function(formData) {
 				return $http.put('/api/user', formData);
 			},
-
+			createPubUser: function(formdata)
+			{	
+				return $http.post('/api/usersPub', formData);
+			}
+			,
 			//STATIONS
 			getStations : function() {
 				return $http.get('/api/station' );

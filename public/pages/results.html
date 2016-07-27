@@ -1,0 +1,26 @@
+<div class="jumbotron text-center">
+			<h1>2016 Election Poll <span class="label label-info">{{ polls.length }}</span></h1>
+		</div>
+
+		<div id="todo-list" class="row">
+			<div class="col-sm-4 col-sm-offset-4">
+
+				
+
+				<!-- LOOP OVER THE TODOS IN $scope.todos -->
+<md-list ng-cloak>
+  <md-subheader class="md-no-sticky">Polls</md-subheader>
+  <md-list-item class="md-2-line" ng-repeat="poll in polls" ng-click="pollClick(poll._id)">
+  <div class="md-list-item-text">
+     <h3>{{ poll.pollName }}</h3>
+      <p>{{poll.pollDesc}}</p>
+      </div>
+  </md-list-item>
+</md-list>
+
+				<p class="text-center" ng-show="loading">
+					<span class="fa fa-spinner fa-spin fa-3x"></span>
+				</p>
+
+			</div>
+		</div>

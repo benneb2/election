@@ -2,6 +2,8 @@
     <!DOCTYPE html>
     <html ng-app="scotchApp">
     <head>
+      <script type="text/javascript" src="https://www.gstatic.com/charts/loader.js"></script>
+
       <!-- SCROLLS -->
       <!-- load bootstrap and fontawesome via CDN -->
       <link rel="stylesheet" href="//netdna.bootstrapcdn.com/bootstrap/3.0.0/css/bootstrap.min.css" />
@@ -16,12 +18,22 @@
       <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.4.7/angular-route.js"></script>
       <script src="https://ajax.googleapis.com/ajax/libs/angular_material/1.0.0-rc1/angular-material.min.js"></script>
 
+      <script src="https://cdnjs.cloudflare.com/ajax/libs/angular-chartist.js/4.2.0/angular-chartist.min.js"></script>
+
+
+<script src="//rawgit.com/angular-ui/angular-google-maps/2.1.5/dist/angular-google-maps.min.js"></script>
+
+  <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyD7_YvHBuTpxr1acf3kiE8p9VIySUCLvHE"></script>
+
+<script src="//cdnjs.cloudflare.com/ajax/libs/lodash.js/3.5.0/lodash.min.js"></script>
 
       <script src="script.js"></script>
 
       <script src="js/services/elecService.js"></script> <!-- load our todo service -->
 
     </head>
+
+
     <body ng-controller="mainController">
 
         <!-- HEADER AND NAVBAR -->
@@ -46,6 +58,5 @@
         <div id="main">
           <div ng-view></div>
         </div>
-
     </body>
     </html>
