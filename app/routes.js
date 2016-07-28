@@ -43,8 +43,8 @@ function getIncidents(res)
 						var tmp = {};
 						tmp.name = users[j].userName + ' ' + users[j].userSurname;
 						tmp.tel = users[j].userTelephone;
-						tmp.lat = users[j].userLat;
-						tmp.lon = users[j].userLon;
+						tmp.lat = results[i].resultLat;
+						tmp.lon = results[i].resultLon;
 						tmp.result = results[i].resultAnswers;
 						tmp.dateTime = results[i].resultDate;
 						returnObj.push(tmp);
