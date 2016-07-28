@@ -95,7 +95,6 @@
         $scope.refreshIncident = function(cb)
         {
             elec.getIncidents().success(function(data) {
-                alert('incident data');
                 
                 $scope.incidents = data;
                 // $scope.incidents = data;
@@ -207,7 +206,7 @@
                 {
 
                     
-
+                    
                      var createMarker3 = function (info){
                 
                         // var newIcon = MapIconMaker.createMarkerIcon({width: 20, height: 34, primaryColor: "#0000FF", cornercolor:"#0000FF"});
@@ -228,7 +227,7 @@
                         $scope.markers.push(marker);
                         
                     }  
-                    
+                    debugger;
                     for (i = 0; i < $scope.incidents.length; i++){
                         createMarker3($scope.incidents[i]);
                     }
