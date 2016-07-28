@@ -206,7 +206,7 @@
                 {
 
                     
-                    
+
                      var createMarker3 = function (info){
                 
                         // var newIcon = MapIconMaker.createMarkerIcon({width: 20, height: 34, primaryColor: "#0000FF", cornercolor:"#0000FF"});
@@ -227,7 +227,6 @@
                         $scope.markers.push(marker);
                         
                     }  
-                    debugger;
                     for (i = 0; i < $scope.incidents.length; i++){
                         createMarker3($scope.incidents[i]);
                     }
@@ -235,8 +234,8 @@
 
                 });
             var mapOptions = {
-                zoom: 8,
-                center: new google.maps.LatLng(-25.786408, 28.161546)
+                zoom: 6,
+                center: new google.maps.LatLng(-28.787419, 24.494382)
             }
 
             $scope.map = new google.maps.Map(document.getElementById('map'), mapOptions);
