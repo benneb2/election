@@ -46,7 +46,7 @@ function getIncidents(res)
 						tmp.lat = users[j].userLat;
 						tmp.lon = users[j].userLon;
 						tmp.result = results[i].resultAnswers;
-
+						tmp.dateTime = results[i].resultDate;
 						returnObj.push(tmp);
 						break;
 					}
@@ -225,7 +225,7 @@ function getStations(res){
 		});
 };
 
-function getUser(res,userName,password){
+function getUser(res,userName,password,lat,lon){
 
 	userDB.find({userUserName:userName,userPassword:password},function(err, results) {
 
@@ -234,7 +234,22 @@ function getUser(res,userName,password){
 				res.send(err)
 
 			if(results.length > 0)
-				res.send(results[0]); // return all results in JSON format
+			{
+				if(typeof lat == 'undefined')
+				{
+					res.send(results[0]); // return all results in JSON format
+				}else
+				{
+					results[0].userLat = lat;
+					results[0].userLon = lon;
+					results[0].save(function(err) {
+    					if (err) { 
+    						res.send(err)
+    					}
+    					res.send(results[0]); 
+  					});
+				}
+			}
 			else
 				res.send('fail');
 		});
@@ -533,12 +548,16 @@ app.all('/*', function(req, res, next) {
 		var date = new Date();
 		date = new Date(1970,0,1,date.getHours(),date.getMinutes(),date.getSeconds());
 
+		var now = new Date();
+		now = new Date(now.getTime() - (now.getTimezoneOffset() * 60000));
 		if(typeof req.body.createNew != 'undefined' && req.body.createNew == true)
 		{
 			var resultData = {
+				resultDate : now.toISOString().replace(/T/, ' ').replace(/\..+/, ''),
 				resultPoll : req.body.resultPoll,
 				resultAnswers : req.body.resultAnswers,
 				isDeleted : false,
+				verified : false,
 			};
 			if(typeof req.body.resultStation != 'undefined')
 			{
@@ -788,7 +807,7 @@ app.all('/*', function(req, res, next) {
 	app.get('/api/users/:userName/:password/:lat/:lon', function(req, res) {
 		// use mongoose to get all poll in the database
 		console.log("GET USER " + req.params.userName + " " + req.params.password);
-		getUser(res,req.params.userName,req.params.password);
+		getUser(res,req.params.userName,req.params.password,req.params.lat,req.params.lon);
 	});
 
 	app.post('/api/users', function(req, res) {

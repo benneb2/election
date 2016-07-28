@@ -95,7 +95,10 @@
         $scope.refreshIncident = function(cb)
         {
             elec.getIncidents().success(function(data) {
+                alert('incident data');
+                
                 $scope.incidents = data;
+                // $scope.incidents = data;
                 if(typeof cb != 'undefined')
                 {
                     cb();
@@ -199,6 +202,39 @@
         {
             $scope.page = 'map'; 
 
+
+            $scope.refreshIncident(function()
+                {
+
+                    
+
+                     var createMarker3 = function (info){
+                
+                        // var newIcon = MapIconMaker.createMarkerIcon({width: 20, height: 34, primaryColor: "#0000FF", cornercolor:"#0000FF"});
+
+                        var marker = new google.maps.Marker({
+                            map: $scope.map,
+                            position: new google.maps.LatLng(info.lat, info.lon),
+                            title:  info.dateTime + ':' + info.name,
+                            icon : pinSymbol('red')
+                        });
+                        marker.content = '<div class="infoWindowContent">' + info.tel + '</div>';
+                        
+                        google.maps.event.addListener(marker, 'click', function(){
+                            infoWindow.setContent('<h2>' + marker.title + '</h2>' + marker.content);
+                            infoWindow.open($scope.map, marker);
+                        });
+                        
+                        $scope.markers.push(marker);
+                        
+                    }  
+                    
+                    for (i = 0; i < $scope.incidents.length; i++){
+                        createMarker3($scope.incidents[i]);
+                    }
+
+
+                });
             var mapOptions = {
                 zoom: 8,
                 center: new google.maps.LatLng(-25.786408, 28.161546)
@@ -210,12 +246,26 @@
             
             var infoWindow = new google.maps.InfoWindow();
             
+            var pinSymbol = function(color) {
+                return {
+                    path: 'M 0,0 C -2,-20 -10,-22 -10,-30 A 10,10 0 1,1 10,-30 C 10,-22 2,-20 0,0 z',
+                    fillColor: color,
+                    fillOpacity: 1,
+                    strokeColor: '#000',
+                    strokeWeight: 2,
+                    scale: 1
+                };
+            }
+
             var createMarker = function (info){
                 
+                // var newIcon = MapIconMaker.createMarkerIcon({width: 20, height: 34, primaryColor: "#0000FF", cornercolor:"#0000FF"});
+
                 var marker = new google.maps.Marker({
                     map: $scope.map,
                     position: new google.maps.LatLng(info.userLat, info.userLon),
-                    title: info.userName + ' ' + info.userSurname
+                    title: info.userName + ' ' + info.userSurname,
+                    icon : pinSymbol('orange')
                 });
                 marker.content = '<div class="infoWindowContent">' + info.userTelephone + '</div>';
                 
@@ -230,6 +280,31 @@
             
             for (i = 0; i < $scope.usersPub.length; i++){
                 createMarker($scope.usersPub[i]);
+            }
+
+            var createMarker2 = function (info){
+                
+                // var newIcon = MapIconMaker.createMarkerIcon({width: 20, height: 34, primaryColor: "#0000FF", cornercolor:"#0000FF"});
+
+                var marker = new google.maps.Marker({
+                    map: $scope.map,
+                    position: new google.maps.LatLng(info.userLat, info.userLon),
+                    title: info.userName + ' ' + info.userSurname,
+                    icon : pinSymbol('green')
+                });
+                // marker.content = '<div class="infoWindowContent">' + info.userTelephone + '</div>';
+                
+                google.maps.event.addListener(marker, 'click', function(){
+                    infoWindow.setContent('<h2>' + marker.title + '</h2>' + marker.content);
+                    infoWindow.open($scope.map, marker);
+                });
+                
+                $scope.markers.push(marker);
+                
+            }  
+            
+            for (i = 0; i < $scope.users.length; i++){
+                createMarker2($scope.users[i]);
             }
 
 
