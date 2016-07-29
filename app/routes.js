@@ -7,6 +7,7 @@ var userDB = require('./models/users');
 var stationDB = require('./models/pollingStations');
 var userPublicDB = require('./models/usersPublic');
 var util = require('util');
+var fs = require('fs');
 var mongoose   = require('mongoose');
 
 function getPolls(res){
@@ -322,8 +323,22 @@ app.all('/*', function(req, res, next) {
 	app.get('/api/terms', function(req, res) {
 		// use mongoose to get all polls in the database
 		console.log("GET terms ");
-		var terms = require('./terms.json');
-		res.json(terms.text);
+
+		var data = fs.readFileSync('./app/terms.txt','utf8');
+		console.log(data);
+		res.json(data);
+		// fs.readFile('./app/terms.json', function read(err, data) {
+		//     if (err) {
+		//     	console.log('err');
+		//     	console.log(err);
+		//     	res.json('');
+		//     	return;
+		//     }
+		//     console.log('data');
+		//     console.log(data);
+		//     res.json(data);
+		// });
+
 	});
 
 	app.get('/api/pollsPub/:id', function(req, res) {
