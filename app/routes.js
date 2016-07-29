@@ -73,34 +73,39 @@ function getObPolls(res){
 			if (err)
 				res.send(err)
 
+
 			console.log(JSON.stringify(polls));
-			var returnPolls = [];
-			for(var i in polls)
-			{
-				if(typeof polls[i].pollStartTime == 'undefined')
-				{
-					continue;
-				}
+			res.json(polls); // return all polls in JSON format
 
-				var startTime = new Date(polls[i].pollStartTime);
-				var endTime = new Date(polls[i].pollEndTime);
+			// var returnPolls = [];
+			// for(var i in polls)
+			// {
+			// 	if(typeof polls[i].pollStartTime == 'undefined')
+			// 	{
+			// 		continue;
+			// 	}
 
-				if(startTime.getTime() < date.getTime() && endTime.getTime() > date.getTime())
-				{
-					returnPolls.push(polls[i]);
-				}
-			}
+			// 	var startTime = new Date(polls[i].pollStartTime);
+			// 	var endTime = new Date(polls[i].pollEndTime);
 
-			res.json(returnPolls); // return all polls in JSON format
+			// 	if(startTime.getTime() < date.getTime() && endTime.getTime() > date.getTime())
+			// 	{
+			// 		returnPolls.push(polls[i]);
+			// 	}
+			// }
+
+			// res.json(returnPolls); // return all polls in JSON format
 		});
 };
 
-function getPubPolls(res){
+function getPubPolls(user,res){
 
 	var date = new Date();
 	date = new Date(1970,0,1,date.getHours(),date.getMinutes(),date.getSeconds());
 	// date = new Date(date.setHours(date.getHours() - 2));
 
+
+	
 
 	pollDB.find({pollPublic:true},function(err, polls) {
 
@@ -108,24 +113,42 @@ function getPubPolls(res){
 			if (err)
 				res.send(err)
 
-			var returnPolls = [];
-			for(var i in polls)
-			{
-				if(typeof polls[i].pollStartTime == 'undefined')
+
+			resultDB.find({resultPoll:'57973d57a06358fb190a796d',resultUser : user},function(err, results) {
+
+				if(results.length > 0)
 				{
-					continue;
-				}
-
-				var startTime = new Date(polls[i].pollStartTime);
-				var endTime = new Date(polls[i].pollEndTime);
-
-				if(startTime.getTime() < date.getTime() && endTime.getTime() > date.getTime())
+					var returnPolls = [];
+					for(var i in polls)
+					{
+						if(polls[i]._id != '57973d57a06358fb190a796d')
+							returnPolls.push(polls[i]);
+					}
+					res.json(returnPolls);
+				}else
 				{
-					returnPolls.push(polls[i]);
+					res.json(polls);
 				}
-			}
+			})
+			
+			// var returnPolls = [];
+			// for(var i in polls)
+			// {
+			// 	if(typeof polls[i].pollStartTime == 'undefined')
+			// 	{
+			// 		continue;
+			// 	}
 
-			res.json(returnPolls); // return all polls in JSON format
+			// 	var startTime = new Date(polls[i].pollStartTime);
+			// 	var endTime = new Date(polls[i].pollEndTime);
+
+			// 	if(startTime.getTime() < date.getTime() && endTime.getTime() > date.getTime())
+			// 	{
+			// 		returnPolls.push(polls[i]);
+			// 	}
+			// }
+
+			// res.json(returnPolls); // return all polls in JSON format
 		});
 };
 
@@ -296,11 +319,17 @@ app.all('/*', function(req, res, next) {
 	});
 
 
-
-	app.get('/api/pollsPub', function(req, res) {
+	app.get('/api/terms', function(req, res) {
 		// use mongoose to get all polls in the database
-		console.log("GET POLLS");
-		getPubPolls(res);
+		console.log("GET terms ");
+		var terms = require('./terms.json');
+		res.json(terms.text);
+	});
+
+	app.get('/api/pollsPub/:id', function(req, res) {
+		// use mongoose to get all polls in the database
+		console.log("GET PubPOLLS " + req.params.id);
+		getPubPolls(req.params.id,res);
 	});
 
 	
@@ -969,6 +998,66 @@ app.all('/*', function(req, res, next) {
 		// use mongoose to get all polls in the database
 		console.log("GET Stations");
 		getStations(res);
+	});
+
+	app.get('/api/gpsStation/:lat/:lon', function(req, res) {
+		// use mongoose to get all polls in the database
+		console.log("GET GPS Stations " + req.params.lat +" "+ req.params.lon);
+		var stations = require('./stations.json');
+
+		if(typeof(Number.prototype.toRad) === "undefined") {
+		    Number.prototype.toRad = function () {
+		        return this * Math.PI / 180;
+		    }
+		}
+
+		var getDistance = function(start, end, decimals) {
+		    decimals = decimals || 2;
+		    var earthRadius = 6371; // km
+		    lat1 = parseFloat(start.latitude);
+		    lat2 = parseFloat(end.latitude);
+		    lon1 = parseFloat(start.longitude);
+		    lon2 = parseFloat(end.longitude);
+
+		    var dLat = (lat2 - lat1).toRad();
+		    var dLon = (lon2 - lon1).toRad();
+		    var lat1 = lat1.toRad();
+		    var lat2 = lat2.toRad();
+
+		    var a = Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+		            Math.sin(dLon / 2) * Math.sin(dLon / 2) * Math.cos(lat1) * Math.cos(lat2);
+		    var c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+		    var d = earthRadius * c;
+		    return Math.round(d * Math.pow(10, decimals)) / Math.pow(10, decimals);
+		};
+
+		var distances = [];
+		for(var i in stations)
+		{
+			c = getDistance({latitude: stations[i].lat,longitude:stations[i].lon},{latitude: req.params.lat,longitude:req.params.lon});
+			// var a = stations[i].lat - req.params.lat
+			// var b = stations[i].lon - req.params.lon
+			// var c = Math.sqrt( a*a + b*b );
+			stations[i].distance = c;
+			distances.push({index:i,dist:c});
+		}
+
+		function compare(a,b) {
+		  if (a.dist < b.dist)
+		    return -1;
+		  if (a.dist > b.dist)
+		    return 1;
+		  return 0;
+		}
+		distances.sort(compare);
+
+		var returnObj = [];
+		for(var i = 0 ; i < 20 ; i++)
+		{
+			returnObj.push(stations[distances[i].index]);
+		}
+		res.json(returnObj);
+		// getStations(res);
 	});
 
 	app.post('/api/station', function(req, res) {
