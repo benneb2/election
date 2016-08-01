@@ -23,7 +23,7 @@ function getPolls(res){
 
 function getIncidents(res)
 {
-	resultDB.find({resultPoll:'57974998331f664b1a8e7f74'}).sort({$natural:-1}).exec(function(err, results) {
+	resultDB.find({resultPoll:'579e528672d83c470b612c41'}).sort({$natural:-1}).exec(function(err, results) {
 
 		if (err)
 				res.send(err)
