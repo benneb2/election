@@ -76,6 +76,16 @@ function getIncidents(res)
 						tmp.dateTime = results[i].resultDate;
 						returnObj.push(tmp);
 					}
+
+					function compare(a,b) {
+					  if (a.dateTime > b.dateTime)
+					    return -1;
+					  if (a.dateTime < b.dateTime)
+					    return 1;
+					  return 0;
+					}
+					returnObj.sort(compare);
+
 					res.json(returnObj); // return all results in JSON format
 
 			});
