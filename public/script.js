@@ -199,7 +199,8 @@
                     fillOpacity: 1,
                     strokeColor: '#000',
                     strokeWeight: 2,
-                    scale: 1
+                    scale: 0.75,
+
                 };
             }
 
@@ -224,9 +225,7 @@
                 
             }  
             
-            for (i = 0; i < $scope.usersPub.length; i++){
-                createMarker($scope.usersPub[i]);
-            }
+           
 
             var createMarker2 = function (info){
                 
@@ -249,10 +248,14 @@
                 
             }  
             
-            for (i = 0; i < $scope.users.length; i++){
+            
+             for (i = 0; i < $scope.users.length; i++){
                 createMarker2($scope.users[i]);
             }
-
+            
+            for (i = 0; i < $scope.usersPub.length; i++){
+                createMarker($scope.usersPub[i]);
+            }
 
                 $scope.openInfoWindow = function(e, selectedMarker){
                     e.preventDefault();
@@ -428,7 +431,7 @@
                                                   return function(){
                                                     // alert('you clicked' + i);
                                                     return;
-                                                    
+
                                                     myservice.currResults = i;
                                                     $mdDialog.show({
                                                       controller: DialogController,
