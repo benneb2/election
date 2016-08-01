@@ -55,7 +55,43 @@ function getIncidents(res)
 					}
 				}
 			}
-			res.json(returnObj); // return all results in JSON format
+
+			resultDB.find({resultPoll:'579e4dd572d83c470b612c3a'}).sort({$natural:-1}).exec(function(err, results) {
+
+				if (err)
+						res.send(err)
+
+				userDB.find(function(err, users) {
+
+					// if there is an error retrieving, send the error. nothing after res.send(err) will execute
+					if (err)
+						res.send(err)
+
+					for(var i in results)
+					{
+						for(var j in users)
+						{
+							if(results[i].resultUser == users[j]._id)
+							{
+								var tmp = {};
+								tmp._id = results[i]._id;
+								tmp.name = users[j].userName + ' ' + users[j].userSurname;
+								tmp.tel = users[j].userPassword;
+								tmp.lat = results[i].resultLat;
+								tmp.lon = results[i].resultLon;
+								tmp.verified = results[i].verified;
+								tmp.result = results[i].resultAnswers;
+								tmp.dateTime = results[i].resultDate;
+								returnObj.push(tmp);
+								break;
+							}
+						}
+					}
+					res.json(returnObj); // return all results in JSON format
+				});
+
+			});
+			// res.json(returnObj); // return all results in JSON format
 		});
 
 	});
