@@ -32,6 +32,11 @@
                 controller  : 'adminController'
             })
 
+            .when('/dashboard', {
+                templateUrl : 'pages/dashboard.html',
+                controller  : 'dashboardController'
+            })
+
             .when('/manager', {
                 templateUrl : 'pages/manager.html',
                 controller  : 'managerController'
@@ -68,14 +73,344 @@
     // create the controller and inject Angular's $scope
 
 
-    scotchApp.controller('adminController', ['$rootScope', '$scope', 'myservice','elec','$location','$mdDialog','uiGmapIsReady','uiGmapGoogleMapApi',function($rootScope, $scope, myservice,elec,$location,$mdDialog,uiGmapIsReady,uiGmapGoogleMapApi) {
+    scotchApp.controller('dashboardController', ['$rootScope', '$scope', 'myservice','elec','$location','$mdDialog','uiGmapIsReady','uiGmapGoogleMapApi',function($rootScope, $scope, myservice,elec,$location,$mdDialog,uiGmapIsReady,uiGmapGoogleMapApi) {
         // create a message to display in our view
 
 
 
         google.charts.load('current', {'packages':['corechart']});
         $scope.page = "users";
-        $scope.roles = ['user','manager','admin'];
+
+
+        $scope.refreshUsers = function()
+        {
+            elec.getUsers().success(function(data) {
+                $scope.users = data;
+                $scope.managers = [];
+                for(var i in $scope.users)
+                {
+                    if($scope.users[i].userRole == 'manager')
+                        $scope.managers.push($scope.users[i]);
+                }
+            });
+        }
+
+        $scope.refreshIncident = function(cb)
+        {
+            elec.getIncidents().success(function(data) {
+                
+                $scope.incidents = data;
+                // $scope.incidents = data;
+                if(typeof cb != 'undefined')
+                {
+                    cb();
+                }
+            });
+        }
+
+        $scope.refreshUsersPub = function()
+        {
+            elec.getUsersPub().success(function(data) {
+                $scope.loading = false;
+                $scope.usersPub = data;
+            });
+        }
+
+
+        $scope.refreshPolls = function()
+        {
+            elec.getPoll().success(function(data) {
+                $scope.loading = false;
+                $scope.polls = data;
+            });
+        }
+
+        $scope.refreshUsers();
+        $scope.refreshPolls();
+        $scope.refreshUsersPub();
+
+        // $scope.page = 'users';//Default Page
+
+        
+        $scope.showMap = function()
+        {
+            $scope.page = 'map'; 
+
+
+            $scope.refreshIncident(function()
+                {
+
+                    
+
+                     var createMarker3 = function (info){
+                
+                        // var newIcon = MapIconMaker.createMarkerIcon({width: 20, height: 34, primaryColor: "#0000FF", cornercolor:"#0000FF"});
+
+                        var marker = new google.maps.Marker({
+                            map: $scope.map,
+                            position: new google.maps.LatLng(info.lat, info.lon),
+                            title:  info.dateTime + ':' + info.name,
+                            icon : pinSymbol('red')
+                        });
+                        marker.content = '<div class="infoWindowContent">' + info.tel + '</div>';
+                        
+                        google.maps.event.addListener(marker, 'click', function(){
+                            infoWindow.setContent('<h2>' + marker.title + '</h2>' + marker.content);
+                            infoWindow.open($scope.map, marker);
+                        });
+                        
+                        $scope.markers.push(marker);
+                        
+                    }  
+                    for (i = 0; i < $scope.incidents.length; i++){
+                        createMarker3($scope.incidents[i]);
+                    }
+
+
+                });
+            var mapOptions = {
+                zoom: 6,
+                center: new google.maps.LatLng(-28.787419, 24.494382)
+            }
+
+            $scope.map = new google.maps.Map(document.getElementById('map'), mapOptions);
+
+            $scope.markers = [];
+            
+            var infoWindow = new google.maps.InfoWindow();
+            
+            var pinSymbol = function(color) {
+                return {
+                    path: 'M 0,0 C -2,-20 -10,-22 -10,-30 A 10,10 0 1,1 10,-30 C 10,-22 2,-20 0,0 z',
+                    fillColor: color,
+                    fillOpacity: 1,
+                    strokeColor: '#000',
+                    strokeWeight: 2,
+                    scale: 1
+                };
+            }
+
+            var createMarker = function (info){
+                
+                // var newIcon = MapIconMaker.createMarkerIcon({width: 20, height: 34, primaryColor: "#0000FF", cornercolor:"#0000FF"});
+
+                var marker = new google.maps.Marker({
+                    map: $scope.map,
+                    position: new google.maps.LatLng(info.userLat, info.userLon),
+                    title: info.userName + ' ' + info.userSurname,
+                    icon : pinSymbol('orange')
+                });
+                marker.content = '<div class="infoWindowContent">' + info.userTelephone + '</div>';
+                
+                google.maps.event.addListener(marker, 'click', function(){
+                    infoWindow.setContent('<h2>' + marker.title + '</h2>' + marker.content);
+                    infoWindow.open($scope.map, marker);
+                });
+                
+                $scope.markers.push(marker);
+                
+            }  
+            
+            for (i = 0; i < $scope.usersPub.length; i++){
+                createMarker($scope.usersPub[i]);
+            }
+
+            var createMarker2 = function (info){
+                
+                // var newIcon = MapIconMaker.createMarkerIcon({width: 20, height: 34, primaryColor: "#0000FF", cornercolor:"#0000FF"});
+
+                var marker = new google.maps.Marker({
+                    map: $scope.map,
+                    position: new google.maps.LatLng(info.userLat, info.userLon),
+                    title: info.userName + ' ' + info.userSurname,
+                    icon : pinSymbol('green')
+                });
+                // marker.content = '<div class="infoWindowContent">' + info.userTelephone + '</div>';
+                
+                google.maps.event.addListener(marker, 'click', function(){
+                    infoWindow.setContent('<h2>' + marker.title + '</h2>' + marker.content);
+                    infoWindow.open($scope.map, marker);
+                });
+                
+                $scope.markers.push(marker);
+                
+            }  
+            
+            for (i = 0; i < $scope.users.length; i++){
+                createMarker2($scope.users[i]);
+            }
+
+
+                $scope.openInfoWindow = function(e, selectedMarker){
+                    e.preventDefault();
+                    google.maps.event.trigger(selectedMarker, 'click');
+                }
+
+              // map = new google.maps.Map(document.getElementById('map'), {
+              //     center: {lat: -25.788673, lng: 28.170473},
+              //     zoom: 8
+              //   });
+        }
+
+        $scope.showPubUsers = function()
+        {
+            $scope.page = 'usersPub'; 
+        }
+        
+
+        $scope.showIncident = function()
+        {
+            $scope.page = 'incident';
+            $scope.refreshIncident();
+            $scope.loop();
+        }
+
+        $scope.loop = function()
+        {
+          setTimeout(function(){
+            $scope.refreshIncident(function()
+            {
+              if($scope.page == 'incident')
+                $scope.loop();
+            });
+          }, 1000);   
+        }
+        
+
+        
+
+        $scope.showResults = function()
+        {
+            $scope.page = 'results';
+        }
+
+        
+        $scope.openResult = function(index)
+        {
+            $scope.page = 'result'; 
+            $scope.poll = $scope.polls[index];
+            $scope.poll._id = $scope.poll._id + '';
+            $scope.loading = true;
+            elec.getQuestion($scope.poll._id).success(function(questions) {
+
+                elec.getPollResult($scope.poll._id)
+                    .success(function(data) {
+                        $scope.loading = false;
+                        $scope.results = {};
+                        for(var i in data)
+                        {
+                            for(var j in data[i].resultAnswers)
+                            {
+                                var result = data[i].resultAnswers[j];
+
+                                var skip = false;
+                                for(var k in questions)
+                                {
+                                    var currQuestion = questions[k];
+                                    if(questions[k].questionNumber == result.q)
+                                    {
+                                        if(questions[k].questionType == 'text')
+                                            skip = true;
+
+                                        if(questions[k].questionType == 'image')
+                                            skip = true;
+
+                                        break;
+                                    }
+                                }
+                                if(skip)
+                                    continue;
+
+
+                                if(typeof result.r == 'undefined')
+                                {
+                                    continue;
+                                    result.r = 'Not answered';
+                                }
+
+                                if(typeof $scope.results[result.q] == 'undefined')
+                                {
+                                    $scope.results[result.q] = {};
+                                }
+
+                                if(currQuestion.questionType == 'radio button')
+                                {
+
+                                    if(typeof $scope.results[result.q][result.r] == 'undefined')
+                                    {
+                                        $scope.results[result.q][result.r] = 0
+                                    }
+                                    $scope.results[result.q][result.r] ++;
+                                }else if(currQuestion.questionType == 'number')
+                                {
+                                    if(typeof $scope.results[result.q][result.r] == 'undefined')
+                                    {
+                                        $scope.results[result.q][result.r] = 0
+                                    }
+                                    $scope.results[result.q][result.r] ++;
+                                }
+                            }
+                            
+                        }
+                        // alert(JSON.stringify($scope.results));
+
+                        
+
+                          setTimeout(function(){
+                              var count = 0;
+                                for(var i in $scope.results)
+                                {
+                                    var chartObj = [];
+                                    chartObj.push(['Value', 'Count']);
+                                    for(var j in  $scope.results[i])
+                                    {
+                                        chartObj.push([j + '-' + $scope.results[i][j],$scope.results[i][j]]);
+                                    }
+
+                                    debugger;
+
+                                     var data = google.visualization.arrayToDataTable(chartObj);
+                                     var title = i;
+
+                                     var options = {};
+
+                                        for(var k in questions)
+                                        {
+                                            if(questions[k].questionNumber == i)
+                                            {
+                                                debugger;
+                                                options.title = questions[k].questionQuestion;
+                                                if(questions[k].questionType == 'radio button')
+                                                    var chart = new google.visualization.PieChart(document.getElementById('chart_'+count));
+                                                if(questions[k].questionType == 'number')
+                                                    var chart = new google.visualization.ColumnChart(document.getElementById('chart_'+count));
+                                                chart.draw(data, options);
+                                                break
+                                            }
+                                        }                                      
+                                      count++;
+                                }
+
+                        }, 500);
+
+
+                    });
+
+            }); 
+
+        }
+
+        
+
+    }]);
+scotchApp.controller('adminController', ['$rootScope', '$scope', 'myservice','elec','$location','$mdDialog','uiGmapIsReady','uiGmapGoogleMapApi',function($rootScope, $scope, myservice,elec,$location,$mdDialog,uiGmapIsReady,uiGmapGoogleMapApi) {
+        // create a message to display in our view
+
+
+
+        google.charts.load('current', {'packages':['corechart']});
+        $scope.page = "users";
+        $scope.roles = ['user','manager','admin','dashboard'];
         $scope.types = ['radio button','multichoice','number','text','image'];
         //Get Date Beforehand
 
@@ -894,6 +1229,10 @@
                     else if(myservice.userRole == 'admin')
                     {
                         $location.path('admin');  
+                    }
+                    else if(myservice.userRole == 'dashboard')
+                    {
+                        $location.path('dashboard');  
                     }
                     else if(myservice.userRole == 'user')
                     {   
