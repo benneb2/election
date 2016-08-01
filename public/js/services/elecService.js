@@ -4,6 +4,8 @@ angular.module('elecService', [])
 	// each function returns a promise object 
 	.factory('elec', ['$http',function($http) {
 		return {
+
+
 			//POLLS
 			getPoll : function() {
 				return $http.get('/api/polls');
@@ -47,6 +49,9 @@ angular.module('elecService', [])
 			},
 
 
+			updateIncident: function(id) {
+				return $http.put('/api/incidents/' + id);
+			},
 			getIncidents : function() {
 				return $http.get('/api/incidents' );
 			},

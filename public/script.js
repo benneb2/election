@@ -73,7 +73,7 @@
     // create the controller and inject Angular's $scope
 
 
-    scotchApp.controller('dashboardController', ['$rootScope', '$scope', 'myservice','elec','$location','$mdDialog','uiGmapIsReady','uiGmapGoogleMapApi',function($rootScope, $scope, myservice,elec,$location,$mdDialog,uiGmapIsReady,uiGmapGoogleMapApi) {
+    scotchApp.controller('dashboardController', ['$rootScope', '$scope', 'myservice','elec','$location','$mdDialog','uiGmapIsReady','uiGmapGoogleMapApi','$mdDialog',function($rootScope, $scope, myservice,elec,$location,$mdDialog,uiGmapIsReady,uiGmapGoogleMapApi,$mdDialog) {
         // create a message to display in our view
 
 
@@ -81,6 +81,19 @@
         google.charts.load('current', {'packages':['corechart']});
         $scope.page = "users";
 
+
+        $scope.updateIncident = function(id)
+        {
+            elec.updateIncident(id).success(function(data) {
+                // $scope.users = data;
+                // $scope.managers = [];
+                // for(var i in $scope.users)
+                // {
+                //     if($scope.users[i].userRole == 'manager')
+                //         $scope.managers.push($scope.users[i]);
+                // }
+            });
+        }  
 
         $scope.refreshUsers = function()
         {
@@ -271,7 +284,9 @@
             $scope.refreshIncident(function()
             {
               if($scope.page == 'incident')
+              {
                 $scope.loop();
+              }
             });
           }, 1000);   
         }
@@ -297,6 +312,7 @@
                     .success(function(data) {
                         $scope.loading = false;
                         $scope.results = {};
+                        myservice.allResults = data;
                         for(var i in data)
                         {
                             for(var j in data[i].resultAnswers)
@@ -354,12 +370,32 @@
                         }
                         // alert(JSON.stringify($scope.results));
 
-                        
+                        function DialogController($scope, $mdDialog) {
+                            debugger;
+                            $scope.result = myservice.currResults;
+                            for(var i in myservice.allResults)
+                            {
+
+                            }
+                          $scope.hide = function() {
+                            $mdDialog.hide();
+                          };
+                          $scope.cancel = function() {
+                            $mdDialog.cancel();
+                          };
+                          $scope.answer = function(answer) {
+                            $mdDialog.hide(answer);
+                          };
+                        }
+
 
                           setTimeout(function(){
                               var count = 0;
                                 for(var i in $scope.results)
                                 {
+                                    
+
+
                                     var chartObj = [];
                                     chartObj.push(['Value', 'Count']);
                                     for(var j in  $scope.results[i])
@@ -367,9 +403,9 @@
                                         chartObj.push([j + '-' + $scope.results[i][j],$scope.results[i][j]]);
                                     }
 
-                                    debugger;
 
                                      var data = google.visualization.arrayToDataTable(chartObj);
+
                                      var title = i;
 
                                      var options = {};
@@ -378,13 +414,43 @@
                                         {
                                             if(questions[k].questionNumber == i)
                                             {
-                                                debugger;
                                                 options.title = questions[k].questionQuestion;
                                                 if(questions[k].questionType == 'radio button')
-                                                    var chart = new google.visualization.PieChart(document.getElementById('chart_'+count));
+                                                {
+                                                    $scope.results[i].chart = new google.visualization.PieChart(document.getElementById('chart_'+count));
+                                                }
                                                 if(questions[k].questionType == 'number')
-                                                    var chart = new google.visualization.ColumnChart(document.getElementById('chart_'+count));
-                                                chart.draw(data, options);
+                                                {
+                                                    $scope.results[i].chart = new google.visualization.ColumnChart(document.getElementById('chart_'+count));
+                                                }
+
+                                                function createCallback( i ){
+                                                  return function(){
+                                                    // alert('you clicked' + i);
+                                                    return;
+                                                    
+                                                    myservice.currResults = i;
+                                                    $mdDialog.show({
+                                                      controller: DialogController,
+                                                      templateUrl: 'pages/resultDialog.html',
+                                                      parent: angular.element(document.body),
+                                                      clickOutsideToClose:true,
+                                                      fullscreen: false
+                                                    })
+                                                    .then(function(answer) {
+                                                      $scope.status = 'You said the information was "' + answer + '".';
+                                                    }, function() {
+                                                      $scope.status = 'You cancelled the dialog.';
+                                                    });
+
+
+                                                  }
+                                                }
+
+
+                                                google.visualization.events.addListener($scope.results[i].chart, 'select', createCallback(i));
+
+                                                $scope.results[i].chart.draw(data, options);
                                                 break
                                             }
                                         }                                      

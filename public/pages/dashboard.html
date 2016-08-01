@@ -41,6 +41,14 @@
 			        			</p>
 			        		</div>
 			        		<div>
+			        			<p ng-if="!incident.verified" style="float: left;">
+			        				Status: Ongeverifieerd
+			        			</p>
+			        			<p ng-if="incident.verified" style="float: left;">
+			        				Status: Geverifieer
+			        			</p>
+			        		</div>
+			        		<div>
 			        			<p style="float: left;">
 			        				Persoon:{{ incident.name }}
 			        			</p>
@@ -55,6 +63,7 @@
 				           	<img style="float: left;" ng-if="result.r && result.q == 'Vraag 3'" ng-src="{{result.r}}">
 				           </img>
 				           </div>
+				           <md-button style="float: left;width: 30%;background-color: rgb(140, 197, 255);" ng-click="updateIncident(incident._id)">Verifieer</md-button> 
 				        </div>
 				        <md-divider ></md-divider>
 				      </md-list-item>

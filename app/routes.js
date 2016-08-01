@@ -42,10 +42,12 @@ function getIncidents(res)
 					if(results[i].resultUser == users[j]._id)
 					{
 						var tmp = {};
+						tmp._id = results[i]._id;
 						tmp.name = users[j].userName + ' ' + users[j].userSurname;
 						tmp.tel = users[j].userTelephone;
 						tmp.lat = results[i].resultLat;
 						tmp.lon = results[i].resultLon;
+						tmp.verified = results[i].verified;
 						tmp.result = results[i].resultAnswers;
 						tmp.dateTime = results[i].resultDate;
 						returnObj.push(tmp);
@@ -828,6 +830,32 @@ app.all('/*', function(req, res, next) {
 		// use mongoose to get all polls in the database
 		console.log("GET incidents");
 		getIncidents(res);
+	});
+
+	app.put('/api/incidents/:id', function(req, res) {
+		// use mongoose to get all polls in the database
+		console.log("post incidents " + req.params.id);
+
+		resultDB.findOne({"_id": req.params.id}, function(err, result) {
+			if (err)
+			{
+				console.log("err " + err);
+				res.send(err);
+			}else
+			{	
+				result.verified = true;
+				result.save(function(err) {
+				    if (err) { 
+				    	console.log("err " + err);
+						res.send(err);
+				    }
+				    res.send("success");
+				  });
+			}
+		});
+
+
+		// getIncidents(res);
 	});
 
 	app.get('/api/users/', function(req, res) {
