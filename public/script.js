@@ -314,150 +314,35 @@
                 elec.getPollResult($scope.poll._id)
                     .success(function(data) {
                         $scope.loading = false;
-                        $scope.results = {};
-                        myservice.allResults = data;
-                        for(var i in data)
-                        {
-                            for(var j in data[i].resultAnswers)
-                            {
-                                var result = data[i].resultAnswers[j];
-
-                                var skip = false;
-                                for(var k in questions)
-                                {
-                                    var currQuestion = questions[k];
-                                    if(questions[k].questionNumber == result.q)
-                                    {
-                                        if(questions[k].questionType == 'text')
-                                            skip = true;
-
-                                        if(questions[k].questionType == 'image')
-                                            skip = true;
-
-                                        break;
-                                    }
-                                }
-                                if(skip)
-                                    continue;
-
-
-                                if(typeof result.r == 'undefined')
-                                {
-                                    continue;
-                                    result.r = 'Not answered';
-                                }
-
-                                if(typeof $scope.results[result.q] == 'undefined')
-                                {
-                                    $scope.results[result.q] = {};
-                                }
-
-                                if(currQuestion.questionType == 'radio button')
-                                {
-
-                                    if(typeof $scope.results[result.q][result.r] == 'undefined')
-                                    {
-                                        $scope.results[result.q][result.r] = 0
-                                    }
-                                    $scope.results[result.q][result.r] ++;
-                                }else if(currQuestion.questionType == 'number')
-                                {
-                                    if(typeof $scope.results[result.q][result.r] == 'undefined')
-                                    {
-                                        $scope.results[result.q][result.r] = 0
-                                    }
-                                    $scope.results[result.q][result.r] ++;
-                                }
-                            }
-                            
-                        }
-                        // alert(JSON.stringify($scope.results));
-
-                        function DialogController($scope, $mdDialog) {
-                            debugger;
-                            $scope.result = myservice.currResults;
-                            for(var i in myservice.allResults)
-                            {
-
-                            }
-                          $scope.hide = function() {
-                            $mdDialog.hide();
-                          };
-                          $scope.cancel = function() {
-                            $mdDialog.cancel();
-                          };
-                          $scope.answer = function(answer) {
-                            $mdDialog.hide(answer);
-                          };
-                        }
-
-
+                        $scope.results = data;
+                        
                           setTimeout(function(){
                               var count = 0;
-                                for(var i in $scope.results)
+                                for(var i in $scope.results.results)
                                 {
-                                    
-
-
+                                    debugger;
                                     var chartObj = [];
                                     chartObj.push(['Value', 'Count']);
-                                    for(var j in  $scope.results[i])
+                                    for(var j in  $scope.results.results[i])
                                     {
-                                        chartObj.push([j + '-' + $scope.results[i][j],$scope.results[i][j]]);
+                                        chartObj.push([j + '-' + $scope.results.results[i][j],$scope.results.results[i][j]]);
                                     }
 
 
                                      var data = google.visualization.arrayToDataTable(chartObj);
-
                                      var title = i;
 
                                      var options = {};
 
-                                        for(var k in questions)
-                                        {
-                                            if(questions[k].questionNumber == i)
-                                            {
-                                                options.title = questions[k].questionQuestion;
-                                                if(questions[k].questionType == 'radio button')
-                                                {
-                                                    $scope.results[i].chart = new google.visualization.PieChart(document.getElementById('chart_'+count));
-                                                }
-                                                if(questions[k].questionType == 'number')
-                                                {
-                                                    $scope.results[i].chart = new google.visualization.ColumnChart(document.getElementById('chart_'+count));
-                                                }
+                                    options.title = $scope.results.questions[i];
 
-                                                function createCallback( i ){
-                                                  return function(){
-                                                    // alert('you clicked' + i);
-                                                    return;
-
-                                                    myservice.currResults = i;
-                                                    $mdDialog.show({
-                                                      controller: DialogController,
-                                                      templateUrl: 'pages/resultDialog.html',
-                                                      parent: angular.element(document.body),
-                                                      clickOutsideToClose:true,
-                                                      fullscreen: false
-                                                    })
-                                                    .then(function(answer) {
-                                                      $scope.status = 'You said the information was "' + answer + '".';
-                                                    }, function() {
-                                                      $scope.status = 'You cancelled the dialog.';
-                                                    });
-
-
-                                                  }
-                                                }
-
-
-                                                google.visualization.events.addListener($scope.results[i].chart, 'select', createCallback(i));
-
-                                                $scope.results[i].chart.draw(data, options);
-                                                break
-                                            }
-                                        }                                      
-                                      count++;
+                                    if($scope.results.type[i] == 'radio button' )
+                                        var chart = new google.visualization.PieChart(document.getElementById('chart_'+count));
+                                    if($scope.results.type[i] == 'number' || $scope.results.type[i] == 'text')
+                                        var chart = new google.visualization.ColumnChart(document.getElementById('chart_'+count));
+                                    
+                                    chart.draw(data, options);                                 
+                                    count++;
                                 }
 
                         }, 500);
@@ -855,99 +740,35 @@ scotchApp.controller('adminController', ['$rootScope', '$scope', 'myservice','el
                 elec.getPollResult($scope.poll._id)
                     .success(function(data) {
                         $scope.loading = false;
-                        $scope.results = {};
-                        for(var i in data)
-                        {
-                            for(var j in data[i].resultAnswers)
-                            {
-                                var result = data[i].resultAnswers[j];
-
-                                var skip = false;
-                                for(var k in questions)
-                                {
-                                    var currQuestion = questions[k];
-                                    if(questions[k].questionNumber == result.q)
-                                    {
-                                        if(questions[k].questionType == 'text')
-                                            skip = true;
-
-                                        if(questions[k].questionType == 'image')
-                                            skip = true;
-
-                                        break;
-                                    }
-                                }
-                                if(skip)
-                                    continue;
-
-
-                                if(typeof result.r == 'undefined')
-                                {
-                                    continue;
-                                    result.r = 'Not answered';
-                                }
-
-                                if(typeof $scope.results[result.q] == 'undefined')
-                                {
-                                    $scope.results[result.q] = {};
-                                }
-
-                                if(currQuestion.questionType == 'radio button')
-                                {
-
-                                    if(typeof $scope.results[result.q][result.r] == 'undefined')
-                                    {
-                                        $scope.results[result.q][result.r] = 0
-                                    }
-                                    $scope.results[result.q][result.r] ++;
-                                }else if(currQuestion.questionType == 'number')
-                                {
-                                    if(typeof $scope.results[result.q][result.r] == 'undefined')
-                                    {
-                                        $scope.results[result.q][result.r] = 0
-                                    }
-                                    $scope.results[result.q][result.r] ++;
-                                }
-                            }
-                            
-                        }
-                        // alert(JSON.stringify($scope.results));
-
+                        $scope.results = data;
                         
-
                           setTimeout(function(){
                               var count = 0;
-                                for(var i in $scope.results)
+                                for(var i in $scope.results.results)
                                 {
+                                    debugger;
                                     var chartObj = [];
                                     chartObj.push(['Value', 'Count']);
-                                    for(var j in  $scope.results[i])
+                                    for(var j in  $scope.results.results[i])
                                     {
-                                        chartObj.push([j + '-' + $scope.results[i][j],$scope.results[i][j]]);
+                                        chartObj.push([j + '-' + $scope.results.results[i][j],$scope.results.results[i][j]]);
                                     }
 
-                                    debugger;
 
                                      var data = google.visualization.arrayToDataTable(chartObj);
                                      var title = i;
 
                                      var options = {};
 
-                                        for(var k in questions)
-                                        {
-                                            if(questions[k].questionNumber == i)
-                                            {
-                                                debugger;
-                                                options.title = questions[k].questionQuestion;
-                                                if(questions[k].questionType == 'radio button')
-                                                    var chart = new google.visualization.PieChart(document.getElementById('chart_'+count));
-                                                if(questions[k].questionType == 'number')
-                                                    var chart = new google.visualization.ColumnChart(document.getElementById('chart_'+count));
-                                                chart.draw(data, options);
-                                                break
-                                            }
-                                        }                                      
-                                      count++;
+                                    options.title = $scope.results.questions[i];
+
+                                    if($scope.results.type[i] == 'radio button' )
+                                        var chart = new google.visualization.PieChart(document.getElementById('chart_'+count));
+                                    if($scope.results.type[i] == 'number' || $scope.results.type[i] == 'text')
+                                        var chart = new google.visualization.ColumnChart(document.getElementById('chart_'+count));
+
+                                    chart.draw(data, options);                                 
+                                    count++;
                                 }
 
                         }, 500);

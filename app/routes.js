@@ -600,7 +600,7 @@ app.all('/*', function(req, res, next) {
 
 	app.get('/api/pollResults/:pollId/', function(req, res) {
 		// use mongoose to get all poll in the database
-		console.log("GET Pollresults " + req.params.pollId );
+		console.log("GET Pollresults Here " + req.params.pollId );
 		resultDB.find({resultPoll:req.params.pollId},function(err, results) {
 
 			console.log('here:' + JSON.stringify(results));
@@ -613,6 +613,132 @@ app.all('/*', function(req, res, next) {
 			else
 				res.json([]);
 		});
+
+	});
+
+	app.get('/api/pollResults2/:pollId/', function(req, res) {
+		// use mongoose to get all poll in the database
+
+		console.log("GET Pollresults Here " + req.params.pollId );
+		questionDB.find({questionPoll:req.params.pollId},null,{sort:'questionNumber'},function(err, questions) {
+			// if there is an error retrieving, send the error. nothing after res.send(err) will execute
+			var returnObj = {};
+			if (err)
+				res.send(err)
+
+
+			var retQuestions = questions.sort(sortAlphaNum);
+
+			var bigQ = {};
+			var bigT = {};
+			for(var i in retQuestions)
+			{
+				bigQ[retQuestions[i].questionNumber] = retQuestions[i].questionQuestion;
+				bigT[retQuestions[i].questionNumber] = retQuestions[i].questionType;
+			}
+			returnObj.questions = bigQ;
+			returnObj.type = bigT;
+
+			resultDB.find({resultPoll:req.params.pollId},function(err, results) {
+
+
+				var data = results;
+				var retResults = {};
+				for(var i in questions)
+				{
+					retResults[retQuestions[i].questionNumber] = {};
+				}
+
+				for(var i in data)
+                {
+                	console.log('hier');
+
+                    for(var j in data[i].resultAnswers)
+                    {
+                        var result = data[i].resultAnswers[j];
+
+                        var skip = false;
+                        for(var k in questions)
+                        {
+                            var currQuestion = questions[k];
+                            if(questions[k].questionNumber == result.q)
+                            {
+                                // if(questions[k].questionType == 'text')
+                                //     skip = true;
+
+                                if(questions[k].questionType == 'image')
+                                    skip = true;
+
+                                break;
+                            }
+                        }
+                        if(skip)
+                            continue; 	
+
+                        if(typeof result.r == 'undefined')
+                        {
+                            continue;
+                            result.r = 'Not answered';
+                        }
+
+                        if(typeof retResults[result.q] == 'undefined')
+                        {
+                            retResults[result.q] = {};
+                        }
+
+                        if(currQuestion.questionType == 'radio button' || currQuestion.questionType == 'multichoice' )
+                        {
+
+                            if(typeof retResults[result.q][result.r] == 'undefined')
+                            {
+                                retResults[result.q][result.r] = 0
+                            }
+                            retResults[result.q][result.r] ++;
+                        }else if(currQuestion.questionType == 'number')
+                        {
+                            if(typeof retResults[result.q][result.r] == 'undefined')
+                            {
+                                retResults[result.q][result.r] = 0
+                            }
+                            retResults[result.q][result.r] ++;
+                        }else if(currQuestion.questionType == 'text')
+                        {
+                        	console.log('TEXT ' + result.r);
+                        	var split = result.r.split(" ");
+                        	for(var k in split)
+                        	{
+                        		if(typeof retResults[result.q][split[k]] == 'undefined')
+	                            {
+	                                retResults[result.q][split[k]] = 0
+	                            }
+	                            retResults[result.q][split[k]] ++;
+                        	}
+                           
+                        }
+
+                    }
+                    
+                }
+
+
+			console.log('here:' + JSON.stringify(results));
+			// if there is an error retrieving, send the error. nothing after res.send(err) will execute
+				if (err)
+					res.send(err)
+
+				// returnObj.raw = results;
+				returnObj.results = retResults;
+
+				res.json(returnObj); // return all polls in JSON format
+			});
+
+
+			
+		});
+
+
+		
+		
 
 	});
 

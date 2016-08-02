@@ -33,7 +33,7 @@ angular.module('elecService', [])
 				return $http.get('/api/results/' + pollId + '/' + station);
 			},
 			getPollResult : function(pollId) {
-				return $http.get('/api/pollResults/' + pollId );
+				return $http.get('/api/pollResults2/' + pollId );
 			},
 			getResultUser : function(pollId,userId) {
 				return $http.get('/api/resultsUser/' + pollId + '/' + userId);
