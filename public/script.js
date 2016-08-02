@@ -310,6 +310,18 @@
             $scope.page = 'results';
         }
 
+        $scope.exportPoll = function()
+        {
+            elec.exportPoll($scope.poll._id).success(function(data) {
+                var anchor = angular.element('<a/>');
+                 anchor.attr({
+                     href: 'data:attachment/csv;charset=utf-8,' + encodeURI(data),
+                     target: '_blank',
+                     download: $scope.poll.pollName +'.csv'
+                 })[0].click();
+             });
+        }
+        
         $scope.openResult = function(index)
         {
             $scope.page = 'result'; 
