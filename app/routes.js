@@ -616,6 +616,77 @@ app.all('/*', function(req, res, next) {
 
 	});
 
+	app.get('/api/export/:pollId', function(req, res) {
+		console.log('EXPORT  ' + req.params.pollId);
+		questionDB.find({questionPoll:req.params.pollId},null,{sort:'questionNumber'},function(err, questions) {
+			resultDB.find({resultPoll:req.params.pollId},null,{sort:'resultDate'},function(err, results) {
+				userDB.find(function(err, users) {
+					userPublicDB.find(function(err, usersPub) {
+
+						var sortQuestions = questions.sort(sortAlphaNum);
+						var csvData = "date,station,user";
+						var tmpdata = "";
+						for(var i in sortQuestions)
+						{
+							tmpdata = tmpdata + ',' + sortQuestions[i].questionNumber;
+						}
+						csvData = csvData + tmpdata;
+						csvData = csvData + '\n';
+						for(var i in results)
+						{
+							var user = '';
+							for(var j in usersPub)
+							{
+								if(usersPub[j]._id == results[i].resultUser)
+								{
+									user = usersPub[j].userName + " " + usersPub[j].userSurname;
+									break;
+								}
+							}
+							if(user == '')
+							{
+								for(var j in users)
+								{
+									if(users[j]._id == results[i].resultUser)
+									{
+										user = usersPub[j].userName;
+										break;
+									}
+								}
+							}
+
+							if(typeof results[i].resultStation == 'undefined')
+								results[i].resultStation = '';
+
+							csvData = csvData  + results[i].resultDate + ',' + results[i].resultStation + ',' + user;
+							for(var j in sortQuestions)
+							{
+								csvData = csvData + ',';
+								for(var k in results[i].resultAnswers)
+								{
+									if(results[i].resultAnswers[k].q == sortQuestions[j].questionNumber)
+									{
+										if(typeof results[i].resultAnswers[k].r != 'undefined')
+											csvData = csvData + results[i].resultAnswers[k].r;
+										break;
+
+									}
+								}
+							}
+							csvData = csvData + '\n';
+						}
+						// tmpdata = tmpdata.substring(1);
+						
+						// res.json(csvData);
+						res.writeHead(200,{'content-type':'text/csv'});
+		    			res.write(csvData);
+		    			res.end();
+	    			})
+    			})
+			})
+		})
+	});
+
 	app.get('/api/pollResults2/:pollId/', function(req, res) {
 		// use mongoose to get all poll in the database
 

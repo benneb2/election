@@ -28,7 +28,11 @@ angular.module('elecService', [])
 				return $http.delete('/api/questions/' + id);
 			},
 
+
 			//RESULTS
+			exportPoll : function(pollId) {
+				return $http.get('/api/export/' + pollId);
+			},
 			getResults : function(pollId,station) {
 				return $http.get('/api/results/' + pollId + '/' + station);
 			},

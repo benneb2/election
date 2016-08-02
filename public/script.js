@@ -310,7 +310,6 @@
             $scope.page = 'results';
         }
 
-        
         $scope.openResult = function(index)
         {
             $scope.page = 'result'; 
@@ -742,6 +741,18 @@ scotchApp.controller('adminController', ['$rootScope', '$scope', 'myservice','el
             $scope.poll.pollStartTime = new Date($scope.poll.pollStartTime);
             $scope.poll.pollEndTime = new Date($scope.poll.pollEndTime);
             $scope.poll._id = $scope.poll._id + '';
+        }
+
+        $scope.exportPoll = function()
+        {
+            elec.exportPoll($scope.poll._id).success(function(data) {
+                var anchor = angular.element('<a/>');
+                 anchor.attr({
+                     href: 'data:attachment/csv;charset=utf-8,' + encodeURI(data),
+                     target: '_blank',
+                     download: $scope.poll.pollName +'.csv'
+                 })[0].click();
+             });
         }
 
         $scope.openResult = function(index)
