@@ -356,7 +356,7 @@
                                      debugger;
                                     options.title = $scope.results.questions[i];
 
-                                    if($scope.results.type[i] == 'radio button' )
+                                    if($scope.results.type[i] == 'radio button' || $scope.results.type[i] == 'multichoice')
                                         var chart = new google.visualization.PieChart(document.getElementById('chart_'+count));
                                     if($scope.results.type[i] == 'number' || $scope.results.type[i] == 'text')
                                         var chart = new google.visualization.ColumnChart(document.getElementById('chart_'+count));
@@ -802,7 +802,7 @@ scotchApp.controller('adminController', ['$rootScope', '$scope', 'myservice','el
                                     debugger;
                                     options.title = $scope.results.questions[i];
 
-                                    if($scope.results.type[i] == 'radio button' )
+                                    if($scope.results.type[i] == 'radio button' || $scope.results.type[i] == 'multichoice')
                                         var chart = new google.visualization.PieChart(document.getElementById('chart_'+count));
                                     if($scope.results.type[i] == 'number' || $scope.results.type[i] == 'text')
                                         var chart = new google.visualization.ColumnChart(document.getElementById('chart_'+count));
