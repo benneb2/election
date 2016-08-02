@@ -81,6 +81,9 @@
         google.charts.load('current', {'packages':['corechart']});
         $scope.page = "users";
 
+        $scope.toggleIncident = true;
+        $scope.toggleObserver = true;
+        $scope.togglePublic = true;
 
         $scope.updateIncident = function(id)
         {
@@ -151,36 +154,36 @@
 
 
             $scope.refreshIncident(function()
-                {
+            {
+                 var createMarker3 = function (info){
+            
+                    // var newIcon = MapIconMaker.createMarkerIcon({width: 20, height: 34, primaryColor: "#0000FF", cornercolor:"#0000FF"});
 
+                    var marker = new google.maps.Marker({
+                        map: $scope.map,
+                        position: new google.maps.LatLng(info.lat, info.lon),
+                        title:  info.dateTime + ':' + info.name,
+                        icon : pinSymbol('red')
+                    });
+                    marker.content = '<div class="infoWindowContent">' + info.tel + '</div>';
                     
+                    google.maps.event.addListener(marker, 'click', function(){
+                        infoWindow.setContent('<h2>' + marker.title + '</h2>' + marker.content);
+                        infoWindow.open($scope.map, marker);
+                    });
+                    
+                    $scope.markers.push(marker);
+                    
+                }  
 
-                     var createMarker3 = function (info){
-                
-                        // var newIcon = MapIconMaker.createMarkerIcon({width: 20, height: 34, primaryColor: "#0000FF", cornercolor:"#0000FF"});
-
-                        var marker = new google.maps.Marker({
-                            map: $scope.map,
-                            position: new google.maps.LatLng(info.lat, info.lon),
-                            title:  info.dateTime + ':' + info.name,
-                            icon : pinSymbol('red')
-                        });
-                        marker.content = '<div class="infoWindowContent">' + info.tel + '</div>';
-                        
-                        google.maps.event.addListener(marker, 'click', function(){
-                            infoWindow.setContent('<h2>' + marker.title + '</h2>' + marker.content);
-                            infoWindow.open($scope.map, marker);
-                        });
-                        
-                        $scope.markers.push(marker);
-                        
-                    }  
+                if($scope.toggleIncident)
+                {
                     for (i = 0; i < $scope.incidents.length; i++){
                         createMarker3($scope.incidents[i]);
                     }
+                }
 
-
-                });
+            });
             var mapOptions = {
                 zoom: 6,
                 center: new google.maps.LatLng(-28.787419, 24.494382)
@@ -247,14 +250,19 @@
                 $scope.markers.push(marker);
                 
             }  
-            
-            
-             for (i = 0; i < $scope.users.length; i++){
-                createMarker2($scope.users[i]);
+
+            if($scope.toggleObserver)
+            {
+                for (i = 0; i < $scope.users.length; i++){
+                    createMarker2($scope.users[i]);
+                }
             }
-            
-            for (i = 0; i < $scope.usersPub.length; i++){
-                createMarker($scope.usersPub[i]);
+
+            if($scope.togglePublic)
+            {
+                for (i = 0; i < $scope.usersPub.length; i++){
+                    createMarker($scope.usersPub[i]);
+                }
             }
 
                 $scope.openInfoWindow = function(e, selectedMarker){
@@ -486,42 +494,46 @@ scotchApp.controller('adminController', ['$rootScope', '$scope', 'myservice','el
             $scope.page = 'users'; 
         }
 
+        $scope.toggleIncident = true;
+        $scope.toggleObserver = true;
+        $scope.togglePublic = true;
+
         $scope.showMap = function()
         {
             $scope.page = 'map'; 
 
 
             $scope.refreshIncident(function()
-                {
+            {
+                 var createMarker3 = function (info){
+            
+                    // var newIcon = MapIconMaker.createMarkerIcon({width: 20, height: 34, primaryColor: "#0000FF", cornercolor:"#0000FF"});
 
+                    var marker = new google.maps.Marker({
+                        map: $scope.map,
+                        position: new google.maps.LatLng(info.lat, info.lon),
+                        title:  info.dateTime + ':' + info.name,
+                        icon : pinSymbol('red')
+                    });
+                    marker.content = '<div class="infoWindowContent">' + info.tel + '</div>';
                     
-
-                     var createMarker3 = function (info){
-                
-                        // var newIcon = MapIconMaker.createMarkerIcon({width: 20, height: 34, primaryColor: "#0000FF", cornercolor:"#0000FF"});
-
-                        var marker = new google.maps.Marker({
-                            map: $scope.map,
-                            position: new google.maps.LatLng(info.lat, info.lon),
-                            title:  info.dateTime + ':' + info.name,
-                            icon : pinSymbol('red')
-                        });
-                        marker.content = '<div class="infoWindowContent">' + info.tel + '</div>';
-                        
-                        google.maps.event.addListener(marker, 'click', function(){
-                            infoWindow.setContent('<h2>' + marker.title + '</h2>' + marker.content);
-                            infoWindow.open($scope.map, marker);
-                        });
-                        
-                        $scope.markers.push(marker);
-                        
-                    }  
+                    google.maps.event.addListener(marker, 'click', function(){
+                        infoWindow.setContent('<h2>' + marker.title + '</h2>' + marker.content);
+                        infoWindow.open($scope.map, marker);
+                    });
+                    
+                    $scope.markers.push(marker);
+                    
+                }  
+                if($scope.toggleIncident)
+                {
                     for (i = 0; i < $scope.incidents.length; i++){
                         createMarker3($scope.incidents[i]);
                     }
+                }
 
 
-                });
+            });
             var mapOptions = {
                 zoom: 6,
                 center: new google.maps.LatLng(-28.787419, 24.494382)
@@ -564,10 +576,6 @@ scotchApp.controller('adminController', ['$rootScope', '$scope', 'myservice','el
                 $scope.markers.push(marker);
                 
             }  
-            
-            for (i = 0; i < $scope.usersPub.length; i++){
-                createMarker($scope.usersPub[i]);
-            }
 
             var createMarker2 = function (info){
                 
@@ -590,20 +598,27 @@ scotchApp.controller('adminController', ['$rootScope', '$scope', 'myservice','el
                 
             }  
             
-            for (i = 0; i < $scope.users.length; i++){
-                createMarker2($scope.users[i]);
+            if($scope.togglePublic)
+            {
+                for (i = 0; i < $scope.usersPub.length; i++)
+                {
+                    createMarker($scope.usersPub[i]);
+                }
             }
 
-
-                $scope.openInfoWindow = function(e, selectedMarker){
-                    e.preventDefault();
-                    google.maps.event.trigger(selectedMarker, 'click');
+            if($scope.toggleObserver)
+            {
+                for (i = 0; i < $scope.users.length; i++){
+                    if($scope.users[i].userLat != "")
+                        createMarker2($scope.users[i]);
                 }
+            }
 
-              // map = new google.maps.Map(document.getElementById('map'), {
-              //     center: {lat: -25.788673, lng: 28.170473},
-              //     zoom: 8
-              //   });
+            $scope.openInfoWindow = function(e, selectedMarker){
+                e.preventDefault();
+                google.maps.event.trigger(selectedMarker, 'click');
+            }
+
         }
 
         $scope.showPubUsers = function()
