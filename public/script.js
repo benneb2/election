@@ -85,6 +85,10 @@
         $scope.toggleObserver = true;
         $scope.togglePublic = true;
 
+        $scope.numIncident = 0;
+        $scope.numObserver = 0;
+        $scope.numPublic = 0;
+
         $scope.updateIncident = function(id)
         {
             elec.updateIncident(id).success(function(data) {
@@ -176,6 +180,7 @@
                     
                 }  
 
+                $scope.numIncident = $scope.incidents.length;
                 if($scope.toggleIncident)
                 {
                     for (i = 0; i < $scope.incidents.length; i++){
@@ -251,6 +256,8 @@
                 
             }  
 
+            $scope.numObserver = $scope.users.length;
+            $scope.numPublic = $scope.usersPub.length;
             if($scope.toggleObserver)
             {
                 for (i = 0; i < $scope.users.length; i++){
@@ -510,6 +517,10 @@ scotchApp.controller('adminController', ['$rootScope', '$scope', 'myservice','el
         $scope.toggleObserver = true;
         $scope.togglePublic = true;
 
+        $scope.numIncident = 0;
+        $scope.numObserver = 0;
+        $scope.numPublic = 0;
+
         $scope.showMap = function()
         {
             $scope.page = 'map'; 
@@ -537,6 +548,8 @@ scotchApp.controller('adminController', ['$rootScope', '$scope', 'myservice','el
                     $scope.markers.push(marker);
                     
                 }  
+
+                $scope.numIncident = $scope.incidents.length;
                 if($scope.toggleIncident)
                 {
                     for (i = 0; i < $scope.incidents.length; i++){
@@ -610,6 +623,9 @@ scotchApp.controller('adminController', ['$rootScope', '$scope', 'myservice','el
                 
             }  
             
+            $scope.numObserver = $scope.users.length;
+            $scope.numPublic = $scope.usersPub.length;
+
             if($scope.togglePublic)
             {
                 for (i = 0; i < $scope.usersPub.length; i++)
