@@ -17,7 +17,7 @@
             <div ng-show="page == 'usersPub'" >
             	<md-content>
 				    <md-list>
-				      <md-subheader class="md-no-sticky">Public Users</md-subheader>
+				      <md-subheader class="md-no-sticky">Public Users  - {{usersPub.length}}</md-subheader>
 				      <md-list-item class="md-2-line" ng-repeat="user in usersPub">
 				        <div class="md-list-item-text" layout="column">
 				          <h3>{{ user.userName }} {{ user.userSurname }}</h3>
