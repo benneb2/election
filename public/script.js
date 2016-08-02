@@ -353,7 +353,7 @@
                                      var title = i;
 
                                      var options = {};
-
+                                     debugger;
                                     options.title = $scope.results.questions[i];
 
                                     if($scope.results.type[i] == 'radio button' )
@@ -799,7 +799,7 @@ scotchApp.controller('adminController', ['$rootScope', '$scope', 'myservice','el
                                      var title = i;
 
                                      var options = {};
-
+                                     debugger;
                                     options.title = $scope.results.questions[i];
 
                                     if($scope.results.type[i] == 'radio button' )
