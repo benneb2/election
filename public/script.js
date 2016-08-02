@@ -321,10 +321,11 @@
                  })[0].click();
              });
         }
-        
+
         $scope.openResult = function(index)
         {
             $scope.page = 'result'; 
+            $scope.results = [];
             $scope.poll = $scope.polls[index];
             $scope.poll._id = $scope.poll._id + '';
             $scope.loading = true;
@@ -770,6 +771,7 @@ scotchApp.controller('adminController', ['$rootScope', '$scope', 'myservice','el
         $scope.openResult = function(index)
         {
             $scope.page = 'result'; 
+            $scope.results = [];
             $scope.poll = $scope.polls[index];
             $scope.poll._id = $scope.poll._id + '';
             $scope.loading = true;
