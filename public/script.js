@@ -256,7 +256,12 @@
                 
             }  
 
-            $scope.numObserver = $scope.users.length;
+            $scope.numObserver = 0;
+            for (i = 0; i < $scope.users.length; i++){
+                if($scope.users[i].userLat != "")
+                    $scope.numObserver ++;
+            }
+            
             $scope.numPublic = $scope.usersPub.length;
             if($scope.toggleObserver)
             {
@@ -623,7 +628,13 @@ scotchApp.controller('adminController', ['$rootScope', '$scope', 'myservice','el
                 
             }  
             
-            $scope.numObserver = $scope.users.length;
+            $scope.numObserver = 0;
+            for (i = 0; i < $scope.users.length; i++){
+                if($scope.users[i].userLat != "")
+                    $scope.numObserver ++;
+            }
+
+            
             $scope.numPublic = $scope.usersPub.length;
 
             if($scope.togglePublic)
