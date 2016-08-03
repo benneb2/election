@@ -669,7 +669,11 @@ app.all('/*', function(req, res, next) {
 									if(results[i].resultAnswers[k].q == sortQuestions[j].questionNumber)
 									{
 										if(typeof results[i].resultAnswers[k].r != 'undefined')
-											csvData = csvData + results[i].resultAnswers[k].r;
+										{
+											var nowResult = results[i].resultAnswers[k].r.replace(/,/g , " ");
+											csvData = csvData + nowResult;
+										}
+											
 										break;
 
 									}
