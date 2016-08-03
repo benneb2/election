@@ -624,7 +624,7 @@ app.all('/*', function(req, res, next) {
 					userPublicDB.find(function(err, usersPub) {
 
 						var sortQuestions = questions.sort(sortAlphaNum);
-						var csvData = "date,station,user";
+						var csvData = "date,station,user,tel";
 						var tmpdata = "";
 						for(var i in sortQuestions)
 						{
@@ -635,11 +635,13 @@ app.all('/*', function(req, res, next) {
 						for(var i in results)
 						{
 							var user = '';
+							var tel = '';
 							for(var j in usersPub)
 							{
 								if(usersPub[j]._id == results[i].resultUser)
 								{
 									user = usersPub[j].userName + " " + usersPub[j].userSurname;
+									tel = usersPub[j].userTelephone;
 									break;
 								}
 							}
@@ -658,7 +660,7 @@ app.all('/*', function(req, res, next) {
 							if(typeof results[i].resultStation == 'undefined')
 								results[i].resultStation = '';
 
-							csvData = csvData  + results[i].resultDate + ',' + results[i].resultStation + ',' + user;
+							csvData = csvData  + results[i].resultDate + ',' + results[i].resultStation + ',' + user + ',' + tel;
 							for(var j in sortQuestions)
 							{
 								csvData = csvData + ',';
