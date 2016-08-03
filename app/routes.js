@@ -660,7 +660,7 @@ app.all('/*', function(req, res, next) {
 							if(typeof results[i].resultStation == 'undefined')
 								results[i].resultStation = '';
 
-							csvData = csvData  + results[i].resultDate + ',' + results[i].resultStation + ',' + user + ',0' + tel;
+							csvData = csvData  + results[i].resultDate + ',' + results[i].resultStation + ',' + user + ',' + tel;
 							for(var j in sortQuestions)
 							{
 								csvData = csvData + ',';
